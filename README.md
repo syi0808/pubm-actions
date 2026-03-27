@@ -1,6 +1,6 @@
 # pubm Changeset Check
 
-A GitHub Action that validates PRs include properly formatted [pubm](https://github.com/syi0808/pubm) changeset files.
+A GitHub Action that checks PRs for valid [pubm](https://github.com/syi0808/pubm) changeset files.
 
 ## Usage
 
@@ -47,15 +47,15 @@ jobs:
 
 ## What it does
 
-1. **Detects** new/modified changeset files in `.pubm/changesets/` via git diff against the base branch
-2. **Validates** each changeset file:
-   - Proper YAML frontmatter format
-   - Valid bump types (`patch`, `minor`, `major`)
-   - Non-empty summary
-   - Package paths exist in the repo
-3. **Comments** on the PR with the result (can be disabled with `comment: false`)
-4. **Fails** the check if no changeset is found or validation errors exist
-5. **Skips** the check if the configured skip label is present on the PR
+1. Finds new or modified changeset files in `.pubm/changesets/` by diffing against the base branch
+2. Checks each changeset file for:
+   - Valid YAML frontmatter
+   - Allowed bump types (`patch`, `minor`, `major`)
+   - A non-empty summary
+   - Package paths that actually exist in the repo
+3. Posts a comment on the PR with the result (disable with `comment: false`)
+4. Fails the check if no changeset is found or if there are validation errors
+5. Skips the check when the configured skip label is on the PR
 
 ## License
 

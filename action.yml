@@ -1,5 +1,5 @@
 name: "pubm Changeset Check"
-description: "Validates that PRs include properly formatted pubm changeset files"
+description: "Checks that PRs include valid pubm changeset files"
 author: "pubm"
 
 branding:
