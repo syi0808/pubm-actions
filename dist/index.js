@@ -31008,15 +31008,15 @@ function missingBody(skipLabel) {
   return `${MARKER}
 ### \u274C No changeset found
 
-This PR does not include a changeset. If this change affects users, please add one:
+This PR doesn't include a changeset. If the change affects users, add one by running:
 
 \`\`\`sh
 pubm changesets add
 \`\`\`
 
-This will create a file in \`.pubm/changesets/\` describing the change and its semver bump.
+This creates a file in \`.pubm/changesets/\` that describes the change and its semver bump.
 
-If this PR does not need a changeset (e.g., docs, CI, refactoring), add the **\`${skipLabel}\`** label to skip this check.
+If this PR doesn't need a changeset (docs, CI, refactoring, etc.), add the **\`${skipLabel}\`** label to skip this check.
 
 ${FOOTER}`;
 }
@@ -31027,13 +31027,13 @@ function invalidBody(errors) {
   return `${MARKER}
 ### \u274C Invalid changeset(s)
 
-The following changeset files have validation errors:
+These changeset files have validation errors:
 
 | File | Error |
 |------|-------|
 ${rows.join("\n")}
 
-Please fix these errors and push again.
+Fix these and push again.
 
 ${FOOTER}`;
 }
@@ -31041,7 +31041,7 @@ function skippedBody(label) {
   return `${MARKER}
 ### \u26A0\uFE0F Changeset check skipped
 
-The **\`${label}\`** label is present. This PR will not require a changeset.
+The **\`${label}\`** label is on this PR, so no changeset is needed.
 
 ${FOOTER}`;
 }
