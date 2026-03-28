@@ -14,8 +14,8 @@ export function detectChangesetFiles(
 		return output
 			.trim()
 			.split("\n")
-			.filter((f) => f.length > 0)
-			.filter((f) => path.basename(f) !== "README.md");
+			.filter((f: string) => f.length > 0)
+			.filter((f: string) => path.basename(f) !== "README.md");
 	} catch {
 		return [];
 	}
