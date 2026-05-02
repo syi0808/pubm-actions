@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
+import { configureGitAuthor } from "../git.js";
 import { getPullRequest, pullRequestsForCommit, repoContext } from "../github.js";
 import { loadPubmContext } from "../pubm/config.js";
 import { publishMergedReleasePr } from "../pubm/publish.js";
@@ -76,6 +77,7 @@ async function run(): Promise<void> {
 	}
 
 	process.env.GITHUB_TOKEN = token;
+	configureGitAuthor(ctx.cwd);
 	const status = await publishMergedReleasePr(ctx, { beforeSha, afterSha });
 	core.setOutput("status", status);
 }

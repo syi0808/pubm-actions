@@ -47843,6 +47843,20 @@ function getOctokit(token, options, ...additionalPlugins) {
   return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 
+// src/git.ts
+import { execFileSync } from "node:child_process";
+function git(args, cwd) {
+  return execFileSync("git", args, {
+    cwd,
+    encoding: "utf-8",
+    stdio: ["ignore", "pipe", "pipe"]
+  }).trim();
+}
+function configureGitAuthor(cwd) {
+  git(["config", "user.name", "pubm-release-bot"], cwd);
+  git(["config", "user.email", "pubm-release-bot@users.noreply.github.com"], cwd);
+}
+
 // src/github.ts
 function repoContext() {
   return context2.repo;
@@ -49626,8 +49640,8 @@ async function createGitHubRelease(_ctx, options) {
   if (!token) {
     throw new GitHubReleaseError(t("error.githubRelease.tokenRequired"));
   }
-  const git = new Git();
-  const remoteUrl = await git.repository();
+  const git2 = new Git();
+  const remoteUrl = await git2.repository();
   const { owner, repo } = parseOwnerRepo(remoteUrl);
   const createResponse = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/releases`,
@@ -49728,8 +49742,8 @@ async function deleteGitHubRelease(releaseId) {
   if (!token) {
     throw new GitHubReleaseError(t("error.githubRelease.tokenRequiredDelete"));
   }
-  const git = new Git();
-  const remoteUrl = await git.repository();
+  const git2 = new Git();
+  const remoteUrl = await git2.repository();
   const { owner, repo } = parseOwnerRepo(remoteUrl);
   await deleteGitHubReleaseByRepository({ token, owner, repo, releaseId });
 }
@@ -49798,7 +49812,7 @@ function parseChangelogSection(changelog, version) {
 }
 
 // ../pubm-issue-34-release-workflow/packages/core/src/conventional-commit/git-log.ts
-import { execFileSync } from "node:child_process";
+import { execFileSync as execFileSync2 } from "node:child_process";
 var COMMIT_START_MARKER = "COMMIT_START";
 var COMMIT_FILES_MARKER = "COMMIT_FILES";
 function getCommitsSinceRef(cwd, ref, toRef) {
@@ -49845,7 +49859,7 @@ function getCommitsSinceRef(cwd, ref, toRef) {
 }
 function execGitRaw(cwd, args) {
   try {
-    return execFileSync("git", args, { cwd, encoding: "utf-8" });
+    return execFileSync2("git", args, { cwd, encoding: "utf-8" });
   } catch {
     return "";
   }
@@ -49979,8 +49993,8 @@ ${section.items.join("\n")}`);
 async function buildReleaseBody(ctx, options) {
   const { pkgPath, version, tag, repositoryUrl } = options;
   const appendCompareLink = options.appendCompareLink ?? true;
-  const git = new Git();
-  const previousTag = options.previousTag ?? (await git.previousTag(tag) || await git.firstCommit());
+  const git2 = new Git();
+  const previousTag = options.previousTag ?? (await git2.previousTag(tag) || await git2.firstCommit());
   const compareLink = `**Full Changelog**: ${repositoryUrl}/compare/${previousTag}...${tag}`;
   const changelogBody = extractChangelog(ctx, pkgPath, version);
   if (changelogBody) {
@@ -49988,7 +50002,7 @@ async function buildReleaseBody(ctx, options) {
 
 ${compareLink}` : changelogBody;
   }
-  const commits = await git.commits(previousTag, tag);
+  const commits = await git2.commits(previousTag, tag);
   if (commits.length === 0) {
     return appendCompareLink ? compareLink : "";
   }
@@ -50125,8 +50139,8 @@ function createGitHubReleaseOperation(hasPublish, dryRun, allowInteractiveTokenP
             const pkgName = getPackageName(ctx, key);
             const tag = `${pkgName}@${pkgVersion}`;
             task.output = t("task.release.creating", { tag });
-            const git = new Git();
-            const repositoryUrl = (await git.repository()).replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
+            const git2 = new Git();
+            const repositoryUrl = (await git2.repository()).replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
             const body = await buildReleaseBody(ctx, {
               pkgPath,
               version: pkgVersion,
@@ -50180,8 +50194,8 @@ function createGitHubReleaseOperation(hasPublish, dryRun, allowInteractiveTokenP
           const version = plan.version;
           const tag = `v${version}`;
           task.output = t("task.release.creating", { tag });
-          const git = new Git();
-          const repositoryUrl = (await git.repository()).replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
+          const git2 = new Git();
+          const repositoryUrl = (await git2.repository()).replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
           const body = await buildReleaseBody(ctx, {
             pkgPath: plan.mode === "single" ? pathFromKey(plan.packageKey) : void 0,
             version,
@@ -50232,12 +50246,12 @@ function createGitHubReleaseOperation(hasPublish, dryRun, allowInteractiveTokenP
           if (tempDir) rmSync(tempDir, { recursive: true, force: true });
         }
       } else {
-        const git = new Git();
+        const git2 = new Git();
         task.title = t("task.release.draftTitle", {
           summary: formatVersionSummary(ctx)
         });
         task.output = t("task.release.resolvingMetadata");
-        const repositoryUrl = (await git.repository()).replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
+        const repositoryUrl = (await git2.repository()).replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
         if (plan.mode === "independent") {
           let first = true;
           for (const [key, pkgVersion] of plan.packages) {
@@ -50348,10 +50362,10 @@ init_error4();
 init_git();
 init_i18n();
 async function ensureReleaseTagsAvailable(ctx, task, tagReferences) {
-  const git = new Git();
+  const git2 = new Git();
   for (const reference of tagReferences) {
     const { tagName } = reference;
-    if (!await git.checkTagExist(tagName)) continue;
+    if (!await git2.checkTagExist(tagName)) continue;
     if (ctx.runtime.promptEnabled) {
       const deleteTag = await task.prompt().run({
         type: "toggle",
@@ -50360,7 +50374,7 @@ async function ensureReleaseTagsAvailable(ctx, task, tagReferences) {
         disabled: "No"
       });
       if (deleteTag) {
-        await git.deleteTag(tagName);
+        await git2.deleteTag(tagName);
         continue;
       }
       throw new AbstractError(t("error.version.tagExists", { tag: tagName }));
@@ -50371,10 +50385,10 @@ async function ensureReleaseTagsAvailable(ctx, task, tagReferences) {
   }
 }
 async function createLocalReleaseTags(ctx, task, commit, tagReferences) {
-  const git = new Git();
+  const git2 = new Git();
   task.output = t("task.version.creatingTags");
   for (const reference of tagReferences) {
-    await git.createTag(reference.tagName, commit);
+    await git2.createTag(reference.tagName, commit);
     registerTagRollback(ctx, reference.tagName);
   }
 }
@@ -51601,27 +51615,27 @@ function mapConfigToParsed(config) {
     unmappable: []
   };
   if (config.git !== void 0) {
-    const git = config.git;
-    const hasGitFields = git.commitMessage !== void 0 || git.tagName !== void 0 || git.requireBranch !== void 0 || git.requireCleanWorkingDir !== void 0;
+    const git2 = config.git;
+    const hasGitFields = git2.commitMessage !== void 0 || git2.tagName !== void 0 || git2.requireBranch !== void 0 || git2.requireCleanWorkingDir !== void 0;
     if (hasGitFields) {
       result.git = {};
-      if (git.commitMessage !== void 0) {
-        result.git.commitMessage = git.commitMessage;
+      if (git2.commitMessage !== void 0) {
+        result.git.commitMessage = git2.commitMessage;
       }
-      if (git.tagName !== void 0) {
-        result.git.tagFormat = git.tagName;
+      if (git2.tagName !== void 0) {
+        result.git.tagFormat = git2.tagName;
       }
-      if (git.requireBranch !== void 0 && git.requireBranch !== false) {
-        if (Array.isArray(git.requireBranch)) {
-          if (git.requireBranch.length > 0) {
-            result.git.branch = git.requireBranch[0];
+      if (git2.requireBranch !== void 0 && git2.requireBranch !== false) {
+        if (Array.isArray(git2.requireBranch)) {
+          if (git2.requireBranch.length > 0) {
+            result.git.branch = git2.requireBranch[0];
           }
         } else {
-          result.git.branch = git.requireBranch;
+          result.git.branch = git2.requireBranch;
         }
       }
-      if (git.requireCleanWorkingDir !== void 0) {
-        result.git.requireCleanWorkdir = git.requireCleanWorkingDir;
+      if (git2.requireCleanWorkingDir !== void 0) {
+        result.git.requireCleanWorkdir = git2.requireCleanWorkingDir;
       }
     }
   }
@@ -52398,14 +52412,14 @@ function samePackageKeySet(a2, b) {
   return sortedA.every((key, index) => key === sortedB[index]);
 }
 async function pushReleaseTags(tagReferences) {
-  const git = new Git();
+  const git2 = new Git();
   for (const reference of tagReferences) {
-    await git.git(["push", "origin", reference.tagName]);
+    await git2.git(["push", "origin", reference.tagName]);
   }
 }
 async function findChangedVersionPackageKeys(ctx, input) {
-  const git = new Git();
-  const raw = await git.git([
+  const git2 = new Git();
+  const raw = await git2.git([
     "diff",
     "--name-only",
     input.beforeSha,
@@ -52532,6 +52546,7 @@ async function run2() {
     );
   }
   process.env.GITHUB_TOKEN = token;
+  configureGitAuthor(ctx.cwd);
   const status = await publishMergedReleasePr(ctx, { beforeSha, afterSha });
   setOutput("status", status);
 }
