@@ -1,14 +1,14 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { upsertComment } from "./comment.js";
-import { detectChangesetFiles } from "./detect.js";
+import { upsertComment } from "../comment.js";
+import { detectChangesetFiles } from "../detect.js";
 import {
 	invalidBody,
 	missingBody,
 	skippedBody,
 	successBody,
-} from "./templates.js";
-import { validateChangesets } from "./validate.js";
+} from "../templates.js";
+import { validateChangesets } from "../validate.js";
 
 async function run(): Promise<void> {
 	const skipLabel = core.getInput("skip-label");

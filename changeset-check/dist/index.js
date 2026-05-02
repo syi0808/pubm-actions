@@ -31047,13 +31047,13 @@ ${FOOTER}`;
 }
 
 // src/comment.ts
-async function upsertComment(octokit, ctx, body) {
+async function upsertComment(octokit, ctx, body, marker = MARKER) {
   const { data: comments } = await octokit.rest.issues.listComments({
     owner: ctx.owner,
     repo: ctx.repo,
     issue_number: ctx.issueNumber
   });
-  const existing = comments.find((c) => c.body?.includes(MARKER));
+  const existing = comments.find((c) => c.body?.includes(marker));
   if (existing) {
     await octokit.rest.issues.updateComment({
       owner: ctx.owner,
@@ -31178,7 +31178,7 @@ function validateChangesets(files, cwd) {
   return { valid, errors };
 }
 
-// src/main.ts
+// src/changeset-check/main.ts
 async function run() {
   const skipLabel = getInput("skip-label");
   const shouldComment = getInput("comment") === "true";

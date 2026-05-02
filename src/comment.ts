@@ -13,6 +13,7 @@ export async function upsertComment(
 	octokit: Octokit,
 	ctx: CommentContext,
 	body: string,
+	marker = MARKER,
 ): Promise<void> {
 	const { data: comments } = await octokit.rest.issues.listComments({
 		owner: ctx.owner,
@@ -20,7 +21,7 @@ export async function upsertComment(
 		issue_number: ctx.issueNumber,
 	});
 
-	const existing = comments.find((c) => c.body?.includes(MARKER));
+	const existing = comments.find((c) => c.body?.includes(marker));
 
 	if (existing) {
 		await octokit.rest.issues.updateComment({

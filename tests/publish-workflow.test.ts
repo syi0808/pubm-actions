@@ -1,0 +1,70 @@
+import { describe, expect, it } from "vitest";
+import {
+	hasLabel,
+	isMergedReleasePullRequest,
+	isPushToBaseBranch,
+	isUsablePushRange,
+} from "../src/publish/workflow.js";
+
+describe("publish workflow helpers", () => {
+	it("only accepts push events on the configured base branch", () => {
+		expect(
+			isPushToBaseBranch({
+				eventName: "push",
+				ref: "refs/heads/main",
+				baseBranch: "main",
+			}),
+		).toBe(true);
+		expect(
+			isPushToBaseBranch({
+				eventName: "pull_request",
+				ref: "refs/heads/main",
+				baseBranch: "main",
+			}),
+		).toBe(false);
+		expect(
+			isPushToBaseBranch({
+				eventName: "push",
+				ref: "refs/heads/feature",
+				baseBranch: "main",
+			}),
+		).toBe(false);
+	});
+
+	it("matches release labels by name", () => {
+		expect(hasLabel([{ name: "pubm:release" }], "pubm:release")).toBe(true);
+		expect(hasLabel([{ name: "other" }, {}], "pubm:release")).toBe(false);
+	});
+
+	it("matches only merged release PRs for the configured branch and label", () => {
+		const pr = {
+			merged: true,
+			base: { ref: "main" },
+			head: { ref: "pubm-release-core-1-2-3" },
+			labels: [{ name: "pubm:release-pr" }],
+		};
+		const input = {
+			baseBranch: "main",
+			label: "pubm:release-pr",
+			branchPrefix: "pubm-release-",
+		};
+
+		expect(isMergedReleasePullRequest(pr, input)).toBe(true);
+		expect(
+			isMergedReleasePullRequest({ ...pr, head: { ref: "feature" } }, input),
+		).toBe(false);
+		expect(
+			isMergedReleasePullRequest({ ...pr, labels: [{ name: "other" }] }, input),
+		).toBe(false);
+		expect(isMergedReleasePullRequest({ ...pr, merged: false }, input)).toBe(false);
+	});
+
+	it("requires a non-zero before and after SHA range", () => {
+		expect(isUsablePushRange("abc", "def")).toBe(true);
+		expect(isUsablePushRange(undefined, "def")).toBe(false);
+		expect(isUsablePushRange("abc", undefined)).toBe(false);
+		expect(isUsablePushRange("0000000000000000000000000000000000000000", "def")).toBe(
+			false,
+		);
+	});
+});
