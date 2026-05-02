@@ -50137,7 +50137,7 @@ function createGitHubReleaseOperation(hasPublish, dryRun, allowInteractiveTokenP
             const pkgPath = pathFromKey(key);
             if (isReleaseExcluded(ctx.config, pkgPath)) continue;
             const pkgName = getPackageName(ctx, key);
-            const tag = `${pkgName}@${pkgVersion}`;
+            const tag = formatTag(ctx, key, pkgVersion);
             task.output = t("task.release.creating", { tag });
             const git2 = new Git();
             const repositoryUrl = (await git2.repository()).replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
@@ -50257,8 +50257,7 @@ function createGitHubReleaseOperation(hasPublish, dryRun, allowInteractiveTokenP
           for (const [key, pkgVersion] of plan.packages) {
             const pkgPath = pathFromKey(key);
             if (isReleaseExcluded(ctx.config, pkgPath)) continue;
-            const pkgName = getPackageName(ctx, key);
-            const tag = `${pkgName}@${pkgVersion}`;
+            const tag = formatTag(ctx, key, pkgVersion);
             const body = await buildReleaseBody(ctx, {
               pkgPath,
               version: pkgVersion,
@@ -52322,6 +52321,11 @@ async function publishReleasePr(ctx, input) {
         })
       );
     }
+  } catch (error3) {
+    await ctx.runtime.rollback.execute(ctx, {
+      interactive: ctx.runtime.promptEnabled
+    });
+    throw error3;
   } finally {
     ctx.config = originalConfig;
     ctx.runtime.versionPlan = originalPlan;
