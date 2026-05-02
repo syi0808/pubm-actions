@@ -49370,30 +49370,14 @@ function registerTagRollback(ctx, tagName) {
     }
   });
 }
-function registerRemoteTagRollback(ctx) {
-  const plan = requireVersionPlan(ctx);
-  if (plan.mode === "independent") {
-    for (const [key, pkgVersion] of plan.packages) {
-      if (isReleaseExcluded(ctx.config, pathFromKey(key))) continue;
-      const tag = formatTag(ctx, key, pkgVersion);
-      ctx.runtime.rollback.add({
-        label: t("task.push.deleteRemoteTag", { tag }),
-        fn: async () => {
-          const g = new Git();
-          await g.pushDelete("origin", tag);
-        }
-      });
+function registerRemoteTagRollbackForTag(ctx, tagName) {
+  ctx.runtime.rollback.add({
+    label: t("task.push.deleteRemoteTag", { tag: tagName }),
+    fn: async () => {
+      const g = new Git();
+      await g.pushDelete("origin", tagName);
     }
-  } else {
-    const tagName = `v${plan.version}`;
-    ctx.runtime.rollback.add({
-      label: t("task.push.deleteRemoteTag", { tag: tagName }),
-      fn: async () => {
-        const g = new Git();
-        await g.pushDelete("origin", tagName);
-      }
-    });
-  }
+  });
 }
 
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/output-formatting.ts
@@ -52306,8 +52290,7 @@ async function publishReleasePr(ctx, input) {
     const head = await new Git().revParse("HEAD");
     await createLocalReleaseTags(ctx, task, head, input.plan.tagReferences);
     if (input.pushTags !== false) {
-      await pushReleaseTags(input.plan.tagReferences);
-      registerRemoteTagRollback(ctx);
+      await pushReleaseTags(ctx, input.plan.tagReferences);
     }
     await runReleaseOperations(
       ctx,
@@ -52415,10 +52398,11 @@ function samePackageKeySet(a2, b) {
   const sortedB = [...b].sort();
   return sortedA.every((key, index) => key === sortedB[index]);
 }
-async function pushReleaseTags(tagReferences) {
+async function pushReleaseTags(ctx, tagReferences) {
   const git2 = new Git();
   for (const reference of tagReferences) {
     await git2.git(["push", "origin", reference.tagName]);
+    registerRemoteTagRollbackForTag(ctx, reference.tagName);
   }
 }
 async function findChangedVersionPackageKeys(ctx, input) {
