@@ -24621,6 +24621,7 @@ var init_i18n = __esm({
 });
 
 // ../pubm-issue-34-release-workflow/packages/core/src/utils/exec.ts
+import { spawn as nodeSpawn } from "node:child_process";
 function getEnhancedPath() {
   const cwd = process.cwd();
   const pathSep = process.platform === "win32" ? ";" : ":";
@@ -24655,25 +24656,62 @@ async function readProcessStream(stream, onChunk) {
   return output;
 }
 async function exec(command, args = [], options = {}) {
-  const proc = Bun.spawn([command, ...args], {
+  const env2 = {
+    ...process.env,
+    PATH: getEnhancedPath(),
+    ...options.nodeOptions?.env
+  };
+  const proc = typeof Bun !== "undefined" && typeof Bun.spawn === "function" ? Bun.spawn([command, ...args], {
     stdout: "pipe",
     stderr: "pipe",
-    env: {
-      ...process.env,
-      PATH: getEnhancedPath(),
-      ...options.nodeOptions?.env
-    },
+    env: env2,
     cwd: options.nodeOptions?.cwd
-  });
+  }) : void 0;
+  const result = proc ? await readBunProcess(proc, options) : await readNodeProcess(command, args, options, env2);
+  if (options.throwOnError && result.exitCode !== 0) {
+    throw new NonZeroExitError(command, result.exitCode, {
+      stdout: result.stdout,
+      stderr: result.stderr
+    });
+  }
+  return result;
+}
+async function readBunProcess(proc, options) {
   const [stdout, stderr] = await Promise.all([
     readProcessStream(proc.stdout, options.onStdout),
     readProcessStream(proc.stderr, options.onStderr)
   ]);
   const exitCode = await proc.exited;
-  if (options.throwOnError && exitCode !== 0) {
-    throw new NonZeroExitError(command, exitCode, { stdout, stderr });
-  }
   return { stdout, stderr, exitCode };
+}
+async function readNodeProcess(command, args, options, env2) {
+  const proc = nodeSpawn(command, args, {
+    stdio: ["ignore", "pipe", "pipe"],
+    cwd: options.nodeOptions?.cwd,
+    env: env2
+  });
+  const [stdout, stderr] = await Promise.all([
+    readNodeStream(proc.stdout, options.onStdout),
+    readNodeStream(proc.stderr, options.onStderr)
+  ]);
+  const exitCode = await new Promise((resolve, reject) => {
+    proc.on("error", reject);
+    proc.on("close", (code) => resolve(code ?? 0));
+  });
+  return { stdout, stderr, exitCode };
+}
+async function readNodeStream(stream, onChunk) {
+  if (!stream) return "";
+  return await new Promise((resolve, reject) => {
+    let output = "";
+    stream.on("data", (chunk) => {
+      const text = Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
+      output += text;
+      onChunk?.(text);
+    });
+    stream.on("error", reject);
+    stream.on("end", () => resolve(output));
+  });
 }
 var NonZeroExitError;
 var init_exec = __esm({
