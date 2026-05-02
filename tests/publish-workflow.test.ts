@@ -50,7 +50,8 @@ describe("publish workflow helpers", () => {
 		const pr = {
 			merged: true,
 			base: { ref: "main" },
-			head: { ref: "pubm/release/core/1.2.3" },
+			head: { ref: "pubm/release/core" },
+			body: '<!-- pubm:release-pr -->\n<!-- pubm:release-pr-metadata {"schemaVersion":1,"scopeId":"core","packageKeys":["core"]} -->',
 			labels: [{ name: "pubm:release-pr" }],
 		};
 		const input = {
@@ -61,12 +62,43 @@ describe("publish workflow helpers", () => {
 
 		expect(isMergedReleasePullRequest(pr, input)).toBe(true);
 		expect(
-			isMergedReleasePullRequest({ ...pr, head: { ref: "feature" } }, input),
+			isMergedReleasePullRequest(
+				{ ...pr, head: { ref: "feature" }, body: "plain" },
+				input,
+			),
 		).toBe(false);
 		expect(
 			isMergedReleasePullRequest({ ...pr, labels: [{ name: "other" }] }, input),
 		).toBe(false);
 		expect(isMergedReleasePullRequest({ ...pr, merged: false }, input)).toBe(false);
+	});
+
+	it("accepts marked release PRs even when custom branch templates have no static prefix", () => {
+		const pr = {
+			merged: true,
+			base: { ref: "main" },
+			head: { ref: "1.2.3/core" },
+			body: '<!-- pubm:release-pr -->\n<!-- pubm:release-pr-metadata {"schemaVersion":1,"scopeId":"core","packageKeys":["core"]} -->',
+			labels: [{ name: "pubm:release-pr" }],
+		};
+
+		expect(
+			isMergedReleasePullRequest(pr, {
+				baseBranch: "main",
+				label: "pubm:release-pr",
+				branchPrefix: "",
+			}),
+		).toBe(true);
+		expect(
+			isMergedReleasePullRequest(
+				{ ...pr, body: "plain" },
+				{
+					baseBranch: "main",
+					label: "pubm:release-pr",
+					branchPrefix: "",
+				},
+			),
+		).toBe(false);
 	});
 
 	it("requires a non-zero before and after SHA range", () => {

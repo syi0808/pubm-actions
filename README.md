@@ -65,6 +65,8 @@ jobs:
 
 Creates managed release PRs that include version file, changelog, changeset, and `afterVersion` hook changes. It supports `push`, `workflow_dispatch`, and `/pubm ...` slash-command reruns on release PR comments.
 
+Release PRs are scope-based pending PRs. When more releasable changes land on the base branch before a release PR is merged, the action updates the existing release PR for that package or group instead of opening a duplicate for the new computed version. The default pubm branch template is versionless (`pubm/release/{scopeSlug}`); the PR title and body carry the current version.
+
 ```yaml
 - uses: syi0808/pubm-actions/release-pr@v1
   with:
@@ -82,7 +84,7 @@ Inputs:
 
 ## Publish
 
-Publishes only after a labeled pubm release PR is merged into the base branch. The action reconstructs the changed release scope from the merge push, creates tags on the merged commit, publishes that scope, and creates GitHub Releases.
+Publishes only after a labeled pubm release PR is merged into the base branch. The action verifies the merged PR through release labels and pubm metadata markers, reconstructs the changed release scope from the merge push, creates tags on the merged commit, publishes that scope, and creates GitHub Releases.
 
 ```yaml
 - uses: syi0808/pubm-actions/publish@v1

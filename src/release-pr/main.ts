@@ -9,6 +9,7 @@ import {
 	createOrUpdatePullRequest,
 	getRepositoryPermission,
 	getPullRequest,
+	listOpenReleasePullRequests,
 	listIssueComments,
 	repoContext,
 } from "../github.js";
@@ -28,6 +29,8 @@ import {
 	isReleasePrEvent,
 	RELEASE_PR_COMMAND_MARKER,
 	RELEASE_PR_DRY_RUN_MARKER,
+	sameRepoHeadBranch,
+	selectExistingReleasePrForScope,
 	selectIssueCommentScope,
 	unauthorizedCommandBody,
 } from "./workflow.js";
@@ -51,6 +54,7 @@ async function run(): Promise<void> {
 	let issueCommentTarget:
 		| {
 				headBranch: string;
+				body?: string | null;
 				labels: string[];
 				comments: { body: string; createdAt?: string }[];
 		  }
@@ -98,6 +102,7 @@ async function run(): Promise<void> {
 		const comments = await listIssueComments(octokit, repo, prNumber);
 		issueCommentTarget = {
 			headBranch: pr.head.ref,
+			body: pr.body,
 			labels: (pr.labels ?? []).map((label) => label.name),
 			comments: comments.map((comment) => ({
 				body: comment.body ?? "",
@@ -156,6 +161,7 @@ async function run(): Promise<void> {
 		const selected = selectIssueCommentScope(
 			planned,
 			issueCommentTarget.headBranch,
+			issueCommentTarget.body,
 		);
 		if (!selected) {
 			core.setOutput("status", "scope_not_found");
@@ -167,9 +173,22 @@ async function run(): Promise<void> {
 	}
 
 	const prNumbers: number[] = [];
+	const openReleasePrs = issueCommentTarget
+		? []
+		: await listOpenReleasePullRequests(octokit, repo, {
+				base: baseBranch,
+				label: ctx.config.releasePr.label,
+			});
+	const repoFullName = `${repo.owner}/${repo.repo}`;
 
 		for (const item of planned) {
-			const branchName = issueCommentTarget?.headBranch ?? item.branchName;
+			const existingPr = issueCommentTarget
+				? undefined
+				: selectExistingReleasePrForScope(item, openReleasePrs);
+			const branchName =
+				issueCommentTarget?.headBranch ??
+				sameRepoHeadBranch(existingPr, repoFullName) ??
+				item.branchName;
 			checkoutReleaseBranch(ctx.cwd, baseBranch, branchName);
 			const prepared = await materializeReleasePrScope(
 				ctx,

@@ -7,6 +7,8 @@ import {
 	isReleasePrEvent,
 	RELEASE_PR_COMMAND_MARKER,
 	RELEASE_PR_DRY_RUN_MARKER,
+	sameRepoHeadBranch,
+	selectExistingReleasePrForScope,
 	selectIssueCommentScope,
 	unauthorizedCommandBody,
 } from "../src/release-pr/workflow.js";
@@ -62,6 +64,81 @@ describe("release-pr workflow helpers", () => {
 		expect(selectIssueCommentScope(scopes, "release/core/manual")).toBe(scopes[0]);
 		expect(selectIssueCommentScope(scopes, "unknown")).toBeUndefined();
 		expect(selectIssueCommentScope([scopes[0]], "renamed-branch")).toBe(scopes[0]);
+	});
+
+	it("selects the commented release PR scope from body metadata before branch fallback", () => {
+		const scopes = [
+			planned("pubm-release-core-1-2-3", "core"),
+			planned("pubm-release-cli-1-2-3", "cli"),
+		];
+		const body =
+			'<!-- pubm:release-pr -->\n<!-- pubm:release-pr-metadata {"schemaVersion":1,"scopeId":"cli","packageKeys":["cli"]} -->';
+
+		expect(selectIssueCommentScope(scopes, "renamed-branch", body)).toBe(
+			scopes[1],
+		);
+	});
+
+	it("matches an existing open release PR by scope metadata regardless of branch version", () => {
+		const item = planned("pubm/release/core/1.3.0", "core");
+
+		const existing = selectExistingReleasePrForScope(item, [
+			{
+				number: 7,
+				body: '<!-- pubm:release-pr -->\n<!-- pubm:release-pr-metadata {"schemaVersion":1,"scopeId":"core","packageKeys":["core"]} -->',
+				head: {
+					ref: "pubm/release/core/1.2.0",
+					repo: { full_name: "pubm-org/repo" },
+				},
+			},
+		]);
+
+		expect(existing?.number).toBe(7);
+		expect(sameRepoHeadBranch(existing, "pubm-org/repo")).toBe(
+			"pubm/release/core/1.2.0",
+		);
+	});
+
+	it("falls back to legacy release PR marker plus scope slug when metadata is missing", () => {
+		const item = planned("pubm/release/core", "core");
+
+		const existing = selectExistingReleasePrForScope(item, [
+			{
+				number: 8,
+				body: "<!-- pubm:release-pr -->",
+				head: { ref: "pubm/release/core/1.2.0" },
+			},
+		]);
+
+		expect(existing?.number).toBe(8);
+	});
+
+	it("does not reuse fork branches for release PR updates", () => {
+		expect(
+			sameRepoHeadBranch(
+				{
+					number: 9,
+					head: {
+						ref: "pubm/release/core",
+						repo: { full_name: "someone/repo" },
+					},
+				},
+				"pubm-org/repo",
+			),
+		).toBeUndefined();
+	});
+
+	it("fails when multiple open release PRs match one scope", () => {
+		const item = planned("pubm/release/core", "core");
+		const body =
+			'<!-- pubm:release-pr -->\n<!-- pubm:release-pr-metadata {"schemaVersion":1,"scopeId":"core","packageKeys":["core"]} -->';
+
+		expect(() =>
+			selectExistingReleasePrForScope(item, [
+				{ number: 1, body, head: { ref: "pubm/release/core-a" } },
+				{ number: 2, body, head: { ref: "pubm/release/core-b" } },
+			]),
+		).toThrow("Multiple open pubm release PRs match core (core): #1, #2");
 	});
 
 	it("formats override parser errors for action output", () => {

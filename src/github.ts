@@ -26,6 +26,23 @@ export async function findOpenPullRequestByHead(
 	return data[0];
 }
 
+export async function listOpenReleasePullRequests(
+	octokit: Octokit,
+	repo: RepoContext,
+	input: { base: string; label: string },
+) {
+	const { data } = await octokit.rest.pulls.list({
+		...repo,
+		state: "open",
+		base: input.base,
+		per_page: 100,
+	});
+
+	return data.filter((pr) =>
+		(pr.labels ?? []).some((label) => label.name === input.label),
+	);
+}
+
 export async function createOrUpdatePullRequest(
 	octokit: Octokit,
 	repo: RepoContext,

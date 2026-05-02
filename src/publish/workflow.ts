@@ -1,3 +1,5 @@
+import { parseReleasePrBodyMetadata } from "@pubm/core";
+
 export function isPushToBaseBranch(input: {
 	eventName: string;
 	ref: string;
@@ -17,7 +19,7 @@ export function hasLabel(
 }
 
 export function branchPrefixFromTemplate(template?: string | null): string {
-	const branchTemplate = template ?? "pubm/release/{packageKeySlug}/{version}";
+	const branchTemplate = template ?? "pubm/release/{scopeSlug}";
 	const firstTokenIndex = branchTemplate.indexOf("{");
 	return firstTokenIndex === -1
 		? branchTemplate
@@ -29,6 +31,7 @@ export function isMergedReleasePullRequest(
 		merged?: boolean | null;
 		base?: { ref?: string | null } | null;
 		head?: { ref?: string | null } | null;
+		body?: string | null;
 		labels?: readonly { name?: string | null }[] | null;
 	},
 	input: {
@@ -39,12 +42,13 @@ export function isMergedReleasePullRequest(
 ): boolean {
 	const matchesBranch = input.branchPrefix
 		? pr.head?.ref?.startsWith(input.branchPrefix)
-		: Boolean(pr.head?.ref);
+		: false;
+	const metadata = parseReleasePrBodyMetadata(pr.body);
 
 	return Boolean(
 		pr.merged &&
 			pr.base?.ref === input.baseBranch &&
-			matchesBranch &&
+			(metadata.isReleasePr || matchesBranch) &&
 			hasLabel(pr.labels ?? [], input.label),
 	);
 }

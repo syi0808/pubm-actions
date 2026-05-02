@@ -62,6 +62,13 @@ declare module "@pubm/core" {
 		slug: string;
 	}
 
+	export interface ReleasePrBodyMetadata {
+		isReleasePr: boolean;
+		scopeId?: string;
+		packageKeys: string[];
+		schemaVersion?: 1;
+	}
+
 	export type ReleasePrOverride =
 		| {
 				source: "label" | "slash";
@@ -127,6 +134,13 @@ declare module "@pubm/core" {
 		version: string;
 		template?: string;
 	}): string;
+	export function parseReleasePrBodyMetadata(
+		body: string | undefined | null,
+	): ReleasePrBodyMetadata;
+	export function sameReleasePrScope(
+		scope: ReleasePrScope,
+		metadata: ReleasePrBodyMetadata,
+	): boolean;
 	export function prepareReleasePr(
 		ctx: PubmContext,
 		input: {

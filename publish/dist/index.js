@@ -50404,7 +50404,7 @@ var defaultRollback = {
 var defaultReleasePr = {
   enabled: false,
   dryRun: true,
-  branchTemplate: "pubm/release/{packageKeySlug}/{version}",
+  branchTemplate: "pubm/release/{scopeSlug}",
   titleTemplate: "chore(release): {scope} {version}",
   label: "pubm:release-pr",
   bumpLabels: {
@@ -52150,6 +52150,45 @@ function slugifyReleasePrToken(value) {
   return slug || "release";
 }
 
+// ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/release-pr-metadata.ts
+var RELEASE_PR_BODY_MARKER = "<!-- pubm:release-pr -->";
+var RELEASE_PR_METADATA_MARKER = "pubm:release-pr-metadata";
+var RELEASE_PR_METADATA_SCHEMA_VERSION = 1;
+function parseReleasePrBodyMetadata(body) {
+  if (!body?.includes(RELEASE_PR_BODY_MARKER)) {
+    return { isReleasePr: false, packageKeys: [] };
+  }
+  const metadata = extractMetadataPayload(body);
+  if (!metadata) {
+    return { isReleasePr: true, packageKeys: [] };
+  }
+  return metadata;
+}
+function extractMetadataPayload(body) {
+  const pattern = new RegExp(
+    `<!--\\s*${escapeRegExp(RELEASE_PR_METADATA_MARKER)}\\s+(.+?)\\s*-->`
+  );
+  const match = body.match(pattern);
+  if (!match) return void 0;
+  try {
+    const parsed = JSON.parse(match[1]);
+    if (parsed.schemaVersion !== RELEASE_PR_METADATA_SCHEMA_VERSION) {
+      return void 0;
+    }
+    return {
+      isReleasePr: true,
+      schemaVersion: RELEASE_PR_METADATA_SCHEMA_VERSION,
+      ...typeof parsed.scopeId === "string" ? { scopeId: parsed.scopeId } : {},
+      packageKeys: Array.isArray(parsed.packageKeys) ? parsed.packageKeys.filter((key) => typeof key === "string").sort() : []
+    };
+  } catch {
+    return void 0;
+  }
+}
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/release-pr-overrides.ts
 var import_semver16 = __toESM(require_semver2(), 1);
 init_package_key();
@@ -52466,14 +52505,15 @@ function hasLabel(labels2, labelName) {
   return labels2.some((label) => label.name === labelName);
 }
 function branchPrefixFromTemplate(template) {
-  const branchTemplate = template ?? "pubm/release/{packageKeySlug}/{version}";
+  const branchTemplate = template ?? "pubm/release/{scopeSlug}";
   const firstTokenIndex = branchTemplate.indexOf("{");
   return firstTokenIndex === -1 ? branchTemplate : branchTemplate.slice(0, firstTokenIndex);
 }
 function isMergedReleasePullRequest(pr, input) {
-  const matchesBranch = input.branchPrefix ? pr.head?.ref?.startsWith(input.branchPrefix) : Boolean(pr.head?.ref);
+  const matchesBranch = input.branchPrefix ? pr.head?.ref?.startsWith(input.branchPrefix) : false;
+  const metadata = parseReleasePrBodyMetadata(pr.body);
   return Boolean(
-    pr.merged && pr.base?.ref === input.baseBranch && matchesBranch && hasLabel(pr.labels ?? [], input.label)
+    pr.merged && pr.base?.ref === input.baseBranch && (metadata.isReleasePr || matchesBranch) && hasLabel(pr.labels ?? [], input.label)
   );
 }
 function isUsablePushRange(beforeSha, afterSha) {

@@ -47878,6 +47878,17 @@ async function findOpenPullRequestByHead(octokit, repo, input) {
   });
   return data[0];
 }
+async function listOpenReleasePullRequests(octokit, repo, input) {
+  const { data } = await octokit.rest.pulls.list({
+    ...repo,
+    state: "open",
+    base: input.base,
+    per_page: 100
+  });
+  return data.filter(
+    (pr) => (pr.labels ?? []).some((label) => label.name === input.label)
+  );
+}
 async function createOrUpdatePullRequest(octokit, repo, input) {
   const existing = await findOpenPullRequestByHead(octokit, repo, {
     owner: repo.owner,
@@ -49873,7 +49884,7 @@ var defaultRollback = {
 var defaultReleasePr = {
   enabled: false,
   dryRun: true,
-  branchTemplate: "pubm/release/{packageKeySlug}/{version}",
+  branchTemplate: "pubm/release/{scopeSlug}",
   titleTemplate: "chore(release): {scope} {version}",
   label: "pubm:release-pr",
   bumpLabels: {
@@ -51983,7 +51994,7 @@ function renderReleasePrTemplate({
 function renderReleasePrBranch(input) {
   return renderReleasePrTemplate({
     ...input,
-    template: input.template ?? "pubm/release/{packageKeySlug}/{version}"
+    template: input.template ?? "pubm/release/{scopeSlug}"
   });
 }
 function renderReleasePrTitle(input) {
@@ -51998,6 +52009,67 @@ function packageNameForScope(ctx, scope) {
 }
 function replaceTemplateToken(template, token, value) {
   return template.split(`{${token}}`).join(value);
+}
+
+// ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/release-pr-metadata.ts
+var RELEASE_PR_BODY_MARKER = "<!-- pubm:release-pr -->";
+var RELEASE_PR_METADATA_MARKER = "pubm:release-pr-metadata";
+var RELEASE_PR_METADATA_SCHEMA_VERSION = 1;
+function renderReleasePrMetadataMarker(scope) {
+  const payload = {
+    schemaVersion: RELEASE_PR_METADATA_SCHEMA_VERSION,
+    scopeId: scope.id,
+    scopeKind: scope.kind,
+    scopeSlug: scope.slug,
+    displayName: scope.displayName,
+    packageKeys: [...scope.packageKeys].sort()
+  };
+  return `<!-- ${RELEASE_PR_METADATA_MARKER} ${JSON.stringify(payload)} -->`;
+}
+function parseReleasePrBodyMetadata(body) {
+  if (!body?.includes(RELEASE_PR_BODY_MARKER)) {
+    return { isReleasePr: false, packageKeys: [] };
+  }
+  const metadata = extractMetadataPayload(body);
+  if (!metadata) {
+    return { isReleasePr: true, packageKeys: [] };
+  }
+  return metadata;
+}
+function sameReleasePrScope(scope, metadata) {
+  if (!metadata.isReleasePr) return false;
+  if (metadata.scopeId && metadata.scopeId === scope.id) return true;
+  return sameStringSet(scope.packageKeys, metadata.packageKeys);
+}
+function extractMetadataPayload(body) {
+  const pattern = new RegExp(
+    `<!--\\s*${escapeRegExp(RELEASE_PR_METADATA_MARKER)}\\s+(.+?)\\s*-->`
+  );
+  const match = body.match(pattern);
+  if (!match) return void 0;
+  try {
+    const parsed = JSON.parse(match[1]);
+    if (parsed.schemaVersion !== RELEASE_PR_METADATA_SCHEMA_VERSION) {
+      return void 0;
+    }
+    return {
+      isReleasePr: true,
+      schemaVersion: RELEASE_PR_METADATA_SCHEMA_VERSION,
+      ...typeof parsed.scopeId === "string" ? { scopeId: parsed.scopeId } : {},
+      packageKeys: Array.isArray(parsed.packageKeys) ? parsed.packageKeys.filter((key) => typeof key === "string").sort() : []
+    };
+  } catch {
+    return void 0;
+  }
+}
+function sameStringSet(a2, b) {
+  if (a2.length !== b.length) return false;
+  const sortedA = [...a2].sort();
+  const sortedB = [...b].sort();
+  return sortedA.every((value, index) => value === sortedB[index]);
+}
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/release-pr-overrides.ts
@@ -52381,7 +52453,8 @@ function releasePrVersionSummary(plan) {
 function renderReleasePrBody(scope, plan, override) {
   const versions = plan.mode === "single" ? [[plan.packageKey, plan.version]] : [...plan.packages];
   return [
-    "<!-- pubm:release-pr -->",
+    RELEASE_PR_BODY_MARKER,
+    renderReleasePrMetadataMarker(scope),
     "",
     "This release PR is managed by pubm. Do not edit the release branch directly.",
     "",
@@ -52497,11 +52570,36 @@ function isPubmSlashCommand(body) {
 function isAuthorizedRepositoryPermission(permission) {
   return permission === "write" || permission === "maintain" || permission === "admin";
 }
-function selectIssueCommentScope(planned, headBranch) {
+function selectIssueCommentScope(planned, headBranch, body) {
+  const metadata = parseReleasePrBodyMetadata(body);
+  const metadataMatch = planned.find(
+    (item) => sameReleasePrScope(item.scope, metadata)
+  );
+  if (metadataMatch) return metadataMatch;
   const exact = planned.find((item) => item.branchName === headBranch);
   if (exact) return exact;
   if (planned.length === 1) return planned[0];
   return planned.find((item) => headBranch.includes(item.scope.slug));
+}
+function selectExistingReleasePrForScope(planned, openPrs) {
+  const matches = openPrs.filter((pr) => {
+    const metadata = parseReleasePrBodyMetadata(pr.body);
+    if (sameReleasePrScope(planned.scope, metadata)) {
+      return true;
+    }
+    return metadata.isReleasePr && Boolean(pr.head?.ref) && (pr.head?.ref === planned.branchName || pr.head?.ref?.includes(planned.scope.slug));
+  });
+  if (matches.length > 1) {
+    throw new Error(
+      `Multiple open pubm release PRs match ${scopeLabel(planned.scope)}: ${matches.map((pr) => `#${pr.number}`).join(", ")}`
+    );
+  }
+  return matches[0];
+}
+function sameRepoHeadBranch(pr, fullName) {
+  if (!pr?.head?.ref) return void 0;
+  if (pr.head.repo?.full_name !== fullName) return void 0;
+  return pr.head.ref;
 }
 function formatOverrideErrors(errors) {
   return errors.map(
@@ -52510,6 +52608,9 @@ function formatOverrideErrors(errors) {
 }
 var RELEASE_PR_COMMAND_MARKER = "<!-- pubm:release-pr-command -->";
 var RELEASE_PR_DRY_RUN_MARKER = "<!-- pubm:release-pr-dry-run -->";
+function scopeLabel(scope) {
+  return `${scope.displayName} (${scope.id})`;
+}
 function unauthorizedCommandBody(username) {
   return `${RELEASE_PR_COMMAND_MARKER}
 ### pubm release command ignored
@@ -52578,6 +52679,7 @@ async function run2() {
     const comments = await listIssueComments(octokit, repo, prNumber);
     issueCommentTarget = {
       headBranch: pr.head.ref,
+      body: pr.body,
       labels: (pr.labels ?? []).map((label) => label.name),
       comments: comments.map((comment) => ({
         body: comment.body ?? "",
@@ -52623,7 +52725,8 @@ async function run2() {
   if (issueCommentTarget) {
     const selected = selectIssueCommentScope(
       planned,
-      issueCommentTarget.headBranch
+      issueCommentTarget.headBranch,
+      issueCommentTarget.body
     );
     if (!selected) {
       setOutput("status", "scope_not_found");
@@ -52634,8 +52737,14 @@ async function run2() {
     planned = [selected];
   }
   const prNumbers = [];
+  const openReleasePrs = issueCommentTarget ? [] : await listOpenReleasePullRequests(octokit, repo, {
+    base: baseBranch,
+    label: ctx.config.releasePr.label
+  });
+  const repoFullName = `${repo.owner}/${repo.repo}`;
   for (const item of planned) {
-    const branchName = issueCommentTarget?.headBranch ?? item.branchName;
+    const existingPr = issueCommentTarget ? void 0 : selectExistingReleasePrForScope(item, openReleasePrs);
+    const branchName = issueCommentTarget?.headBranch ?? sameRepoHeadBranch(existingPr, repoFullName) ?? item.branchName;
     checkoutReleaseBranch(ctx.cwd, baseBranch, branchName);
     const prepared = await materializeReleasePrScope(
       ctx,

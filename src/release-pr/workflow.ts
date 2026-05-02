@@ -1,4 +1,9 @@
 import type { PlannedReleasePrScope } from "../pubm/release-pr.js";
+import {
+	parseReleasePrBodyMetadata,
+	sameReleasePrScope,
+	type ReleasePrScope,
+} from "@pubm/core";
 
 export const RELEASE_PR_EVENTS = [
 	"push",
@@ -27,11 +32,65 @@ export function isAuthorizedRepositoryPermission(
 export function selectIssueCommentScope(
 	planned: readonly PlannedReleasePrScope[],
 	headBranch: string,
+	body?: string | null,
 ): PlannedReleasePrScope | undefined {
+	const metadata = parseReleasePrBodyMetadata(body);
+	const metadataMatch = planned.find((item) =>
+		sameReleasePrScope(item.scope, metadata),
+	);
+	if (metadataMatch) return metadataMatch;
+
 	const exact = planned.find((item) => item.branchName === headBranch);
 	if (exact) return exact;
 	if (planned.length === 1) return planned[0];
 	return planned.find((item) => headBranch.includes(item.scope.slug));
+}
+
+export interface OpenReleasePullRequest {
+	number: number;
+	body?: string | null;
+	head?: {
+		ref?: string | null;
+		repo?: { full_name?: string | null } | null;
+	} | null;
+}
+
+export function selectExistingReleasePrForScope(
+	planned: PlannedReleasePrScope,
+	openPrs: readonly OpenReleasePullRequest[],
+): OpenReleasePullRequest | undefined {
+	const matches = openPrs.filter((pr) => {
+		const metadata = parseReleasePrBodyMetadata(pr.body);
+		if (sameReleasePrScope(planned.scope, metadata)) {
+			return true;
+		}
+
+		return (
+			metadata.isReleasePr &&
+			Boolean(pr.head?.ref) &&
+			(pr.head?.ref === planned.branchName ||
+				pr.head?.ref?.includes(planned.scope.slug))
+		);
+	});
+
+	if (matches.length > 1) {
+		throw new Error(
+			`Multiple open pubm release PRs match ${scopeLabel(planned.scope)}: ${matches
+				.map((pr) => `#${pr.number}`)
+				.join(", ")}`,
+		);
+	}
+
+	return matches[0];
+}
+
+export function sameRepoHeadBranch(
+	pr: OpenReleasePullRequest | undefined,
+	fullName: string,
+): string | undefined {
+	if (!pr?.head?.ref) return undefined;
+	if (pr.head.repo?.full_name !== fullName) return undefined;
+	return pr.head.ref;
 }
 
 export function formatOverrideErrors(
@@ -46,6 +105,10 @@ export function formatOverrideErrors(
 
 export const RELEASE_PR_COMMAND_MARKER = "<!-- pubm:release-pr-command -->";
 export const RELEASE_PR_DRY_RUN_MARKER = "<!-- pubm:release-pr-dry-run -->";
+
+function scopeLabel(scope: ReleasePrScope): string {
+	return `${scope.displayName} (${scope.id})`;
+}
 
 export function unauthorizedCommandBody(username: string): string {
 	return `${RELEASE_PR_COMMAND_MARKER}
