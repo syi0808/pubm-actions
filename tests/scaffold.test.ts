@@ -39,15 +39,15 @@ describe("action scaffold", () => {
 		const packageJson = JSON.parse(
 			readFileSync(path.join(root, "package.json"), "utf8"),
 		);
+		const buildScript = readFileSync(
+			path.join(root, "scripts", "build.mjs"),
+			"utf8",
+		);
 
-		expect(packageJson.scripts.build).toContain(
-			"--outfile=changeset-check/dist/index.js",
-		);
-		expect(packageJson.scripts.build).toContain(
-			"--outfile=release-pr/dist/index.js",
-		);
-		expect(packageJson.scripts.build).toContain(
-			"--outfile=publish/dist/index.js",
-		);
+		expect(packageJson.scripts.build).toBe("node scripts/build.mjs");
+		expect(buildScript).toContain('"changeset-check/dist/index.js"');
+		expect(buildScript).toContain('"release-pr/dist/index.js"');
+		expect(buildScript).toContain('"publish/dist/index.js"');
+		expect(buildScript).toContain("__pubmCreateRequire");
 	});
 });

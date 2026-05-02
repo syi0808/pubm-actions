@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/changeset-check/main.ts --bundle --platform=node --target=node20 --format=esm --alias:@pubm/core=../pubm-issue-34-release-workflow/packages/core/src/index.ts --alias:@napi-rs/keyring=./src/stubs/keyring.ts --outfile=changeset-check/dist/index.js && esbuild src/release-pr/main.ts --bundle --platform=node --target=node20 --format=esm --alias:@pubm/core=../pubm-issue-34-release-workflow/packages/core/src/index.ts --alias:@napi-rs/keyring=./src/stubs/keyring.ts --outfile=release-pr/dist/index.js && esbuild src/publish/main.ts --bundle --platform=node --target=node20 --format=esm --alias:@pubm/core=../pubm-issue-34-release-workflow/packages/core/src/index.ts --alias:@napi-rs/keyring=./src/stubs/keyring.ts --outfile=publish/dist/index.js",
+    "build": "node scripts/build.mjs",
     "test": "vitest --run",
     "typecheck": "tsc --noEmit"
   },
