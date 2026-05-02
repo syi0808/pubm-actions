@@ -52463,9 +52463,15 @@ function isPushToBaseBranch(input) {
 function hasLabel(labels2, labelName) {
   return labels2.some((label) => label.name === labelName);
 }
+function branchPrefixFromTemplate(template) {
+  const branchTemplate = template ?? "pubm/release/{packageKeySlug}/{version}";
+  const firstTokenIndex = branchTemplate.indexOf("{");
+  return firstTokenIndex === -1 ? branchTemplate : branchTemplate.slice(0, firstTokenIndex);
+}
 function isMergedReleasePullRequest(pr, input) {
+  const matchesBranch = input.branchPrefix ? pr.head?.ref?.startsWith(input.branchPrefix) : Boolean(pr.head?.ref);
   return Boolean(
-    pr.merged && pr.base?.ref === input.baseBranch && pr.head?.ref?.startsWith(input.branchPrefix) && hasLabel(pr.labels ?? [], input.label)
+    pr.merged && pr.base?.ref === input.baseBranch && matchesBranch && hasLabel(pr.labels ?? [], input.label)
   );
 }
 function isUsablePushRange(beforeSha, afterSha) {
@@ -52507,7 +52513,9 @@ async function run2() {
     if (isMergedReleasePullRequest(fullPr, {
       baseBranch,
       label: ctx.config.releasePr.label,
-      branchPrefix: ctx.config.releasePr.branchPrefix
+      branchPrefix: branchPrefixFromTemplate(
+        ctx.config.releasePr.branchTemplate
+      )
     })) {
       releasePrs.push(fullPr);
     }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	branchPrefixFromTemplate,
 	hasLabel,
 	isMergedReleasePullRequest,
 	isPushToBaseBranch,
@@ -36,17 +37,26 @@ describe("publish workflow helpers", () => {
 		expect(hasLabel([{ name: "other" }, {}], "pubm:release")).toBe(false);
 	});
 
+	it("derives the release branch prefix from the configured template", () => {
+		expect(branchPrefixFromTemplate("pubm/release/{packageKeySlug}/{version}")).toBe(
+			"pubm/release/",
+		);
+		expect(branchPrefixFromTemplate("release/{version}")).toBe("release/");
+		expect(branchPrefixFromTemplate("{scope}/{version}")).toBe("");
+		expect(branchPrefixFromTemplate()).toBe("pubm/release/");
+	});
+
 	it("matches only merged release PRs for the configured branch and label", () => {
 		const pr = {
 			merged: true,
 			base: { ref: "main" },
-			head: { ref: "pubm-release-core-1-2-3" },
+			head: { ref: "pubm/release/core/1.2.3" },
 			labels: [{ name: "pubm:release-pr" }],
 		};
 		const input = {
 			baseBranch: "main",
 			label: "pubm:release-pr",
-			branchPrefix: "pubm-release-",
+			branchPrefix: "pubm/release/",
 		};
 
 		expect(isMergedReleasePullRequest(pr, input)).toBe(true);

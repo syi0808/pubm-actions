@@ -4,6 +4,7 @@ import { getPullRequest, pullRequestsForCommit, repoContext } from "../github.js
 import { loadPubmContext } from "../pubm/config.js";
 import { publishMergedReleasePr } from "../pubm/publish.js";
 import {
+	branchPrefixFromTemplate,
 	isMergedReleasePullRequest,
 	isPushToBaseBranch,
 	isUsablePushRange,
@@ -50,7 +51,9 @@ async function run(): Promise<void> {
 			isMergedReleasePullRequest(fullPr, {
 				baseBranch,
 				label: ctx.config.releasePr.label,
-				branchPrefix: ctx.config.releasePr.branchPrefix,
+				branchPrefix: branchPrefixFromTemplate(
+					ctx.config.releasePr.branchTemplate,
+				),
 			})
 		) {
 			releasePrs.push(fullPr);

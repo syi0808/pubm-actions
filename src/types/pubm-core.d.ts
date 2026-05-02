@@ -15,12 +15,11 @@ declare module "@pubm/core" {
 		versioning?: string;
 		packages: PackageConfig[];
 		plugins: unknown[];
-			releasePr: {
-				label: string;
-				branchPrefix: string;
-				branchTemplate?: string;
-				titleTemplate?: string;
-				bumpLabels: Partial<Record<ReleasePrBumpOverride, string>>;
+		releasePr: {
+			label: string;
+			branchTemplate?: string;
+			titleTemplate?: string;
+			bumpLabels: Partial<Record<ReleasePrBumpOverride, string>>;
 			[key: string]: unknown;
 		};
 		[key: string]: unknown;

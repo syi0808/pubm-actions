@@ -16,6 +16,14 @@ export function hasLabel(
 	return labels.some((label) => label.name === labelName);
 }
 
+export function branchPrefixFromTemplate(template?: string | null): string {
+	const branchTemplate = template ?? "pubm/release/{packageKeySlug}/{version}";
+	const firstTokenIndex = branchTemplate.indexOf("{");
+	return firstTokenIndex === -1
+		? branchTemplate
+		: branchTemplate.slice(0, firstTokenIndex);
+}
+
 export function isMergedReleasePullRequest(
 	pr: {
 		merged?: boolean | null;
@@ -29,10 +37,14 @@ export function isMergedReleasePullRequest(
 		branchPrefix: string;
 	},
 ): boolean {
+	const matchesBranch = input.branchPrefix
+		? pr.head?.ref?.startsWith(input.branchPrefix)
+		: Boolean(pr.head?.ref);
+
 	return Boolean(
 		pr.merged &&
 			pr.base?.ref === input.baseBranch &&
-			pr.head?.ref?.startsWith(input.branchPrefix) &&
+			matchesBranch &&
 			hasLabel(pr.labels ?? [], input.label),
 	);
 }
