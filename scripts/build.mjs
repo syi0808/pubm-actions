@@ -3,7 +3,7 @@ import { build } from "esbuild";
 const shared = {
   bundle: true,
   platform: "node",
-  target: "node20",
+  target: "node24",
   format: "esm",
   alias: {
     "@pubm/core": "../pubm-issue-34-release-workflow/packages/core/src/index.ts",

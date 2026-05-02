@@ -25,5 +25,5 @@ outputs:
     description: 'Result: "published", "no_scope", or "ignored"'
 
 runs:
-  using: "node20"
+  using: "node24"
   main: "dist/index.js"

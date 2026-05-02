@@ -29,5 +29,5 @@ outputs:
     description: "Human-readable error details when override parsing or dry-run validation fails"
 
 runs:
-  using: "node20"
+  using: "node24"
   main: "dist/index.js"
