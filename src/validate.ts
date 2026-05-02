@@ -1,9 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import {
-	type Changeset,
-	parseChangeset,
-} from "../pubm/packages/core/src/changeset/parser.js";
+import { type Changeset, parseChangeset } from "@pubm/core";
 
 export interface ValidationError {
 	file: string;

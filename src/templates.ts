@@ -1,4 +1,4 @@
-import type { Changeset } from "../pubm/packages/core/src/changeset/parser.js";
+import type { Changeset } from "@pubm/core";
 import type { ValidationError } from "./validate.js";
 
 const MARKER = "<!-- pubm:changeset-check -->";

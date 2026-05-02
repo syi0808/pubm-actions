@@ -2,6 +2,17 @@ declare module "@pubm/core" {
 	export type BumpType = "patch" | "minor" | "major";
 	export type ReleasePrBumpOverride = BumpType | "prerelease";
 
+	export interface ChangesetRelease {
+		path: string;
+		type: BumpType;
+	}
+
+	export interface Changeset {
+		id: string;
+		releases: ChangesetRelease[];
+		summary: string;
+	}
+
 	export interface PackageConfig {
 		path: string;
 		version: string;
@@ -90,6 +101,11 @@ declare module "@pubm/core" {
 		options: unknown,
 		cwd: string,
 	): PubmContext;
+	export function parseChangeset(
+		content: string,
+		fileName: string,
+		resolveKey?: (key: string) => string | undefined,
+	): Changeset;
 	export function applyVersionSourcePlan(ctx: PubmContext): Promise<void>;
 	export function buildReleasePrScopes(
 		ctx: PubmContext,
