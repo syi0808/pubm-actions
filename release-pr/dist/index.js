@@ -49883,7 +49883,6 @@ var defaultRollback = {
 };
 var defaultReleasePr = {
   enabled: false,
-  dryRun: true,
   branchTemplate: "pubm/release/{scopeSlug}",
   titleTemplate: "chore(release): {scope} {version}",
   label: "pubm:release-pr",
@@ -49892,8 +49891,7 @@ var defaultReleasePr = {
     minor: "release:minor",
     major: "release:major",
     prerelease: "release:prerelease"
-  },
-  grouping: "auto"
+  }
 };
 var defaultConfig = {
   versioning: "independent",
@@ -49999,7 +49997,11 @@ async function resolveConfig(config, cwd) {
     },
     snapshotTemplate: config.snapshotTemplate ?? defaultConfig.snapshotTemplate,
     ecosystems: config.ecosystems ?? {},
-    releasePr: resolveReleasePrConfig(config.releasePr),
+    releasePr: resolveReleasePrConfig(config.releasePr, {
+      versioning: config.versioning ?? defaultConfig.versioning,
+      fixed: config.fixed ?? defaultConfig.fixed,
+      linked: config.linked ?? defaultConfig.linked
+    }),
     plugins: config.plugins ?? [],
     versionSources: config.versionSources ?? defaultConfig.versionSources,
     conventionalCommits: {
@@ -50008,14 +50010,19 @@ async function resolveConfig(config, cwd) {
     ...discoveryEmpty ? { discoveryEmpty } : {}
   };
 }
-function resolveReleasePrConfig(config) {
+function resolveReleasePrConfig(config, inherited) {
+  const fixed = config?.fixed ?? inherited.fixed;
+  const linked = config?.linked ?? inherited.linked;
   return {
     ...defaultReleasePr,
     ...config,
     bumpLabels: {
       ...defaultReleasePr.bumpLabels,
       ...config?.bumpLabels
-    }
+    },
+    grouping: config?.grouping ?? inherited.versioning,
+    fixed: fixed.map((group) => [...group]),
+    linked: linked.map((group) => [...group])
   };
 }
 function resolveEcosystemKey(pkg, _entry) {
@@ -51958,59 +51965,6 @@ init_git();
 init_runner();
 init_package_key();
 
-// ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/release-pr-naming.ts
-init_package_key();
-function slugifyReleasePrToken(value) {
-  const slug = value.normalize("NFKD").split("").filter((char) => char.charCodeAt(0) <= 127).join("").toLowerCase().replace(/::/g, "-").replace(/[/@]+/g, "-").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").replace(/-+/g, "-");
-  return slug || "release";
-}
-function renderReleasePrTemplate({
-  ctx,
-  scope,
-  version,
-  template
-}) {
-  const packageKeyValue = [...scope.packageKeys].sort().join("+");
-  const packageKeySlug = slugifyReleasePrToken(packageKeyValue);
-  const scopeValue = scope.kind === "package" && ctx ? packageNameForScope(ctx, scope) : scope.displayName;
-  return replaceTemplateToken(
-    replaceTemplateToken(
-      replaceTemplateToken(
-        replaceTemplateToken(
-          replaceTemplateToken(template, "scope", scopeValue),
-          "scopeSlug",
-          scope.slug
-        ),
-        "packageKey",
-        packageKeyValue
-      ),
-      "packageKeySlug",
-      packageKeySlug
-    ),
-    "version",
-    version
-  );
-}
-function renderReleasePrBranch(input) {
-  return renderReleasePrTemplate({
-    ...input,
-    template: input.template ?? "pubm/release/{scopeSlug}"
-  });
-}
-function renderReleasePrTitle(input) {
-  return renderReleasePrTemplate({
-    ...input,
-    template: input.template ?? "chore(release): {scope} {version}"
-  });
-}
-function packageNameForScope(ctx, scope) {
-  const key = scope.packageKeys[0];
-  return ctx.config.packages.find((pkg) => packageKey(pkg) === key)?.name ?? key;
-}
-function replaceTemplateToken(template, token, value) {
-  return template.split(`{${token}}`).join(value);
-}
-
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/release-pr-metadata.ts
 var RELEASE_PR_BODY_MARKER = "<!-- pubm:release-pr -->";
 var RELEASE_PR_METADATA_MARKER = "pubm:release-pr-metadata";
@@ -52070,6 +52024,59 @@ function sameStringSet(a2, b) {
 }
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/release-pr-naming.ts
+init_package_key();
+function slugifyReleasePrToken(value) {
+  const slug = value.normalize("NFKD").split("").filter((char) => char.charCodeAt(0) <= 127).join("").toLowerCase().replace(/::/g, "-").replace(/[/@]+/g, "-").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").replace(/-+/g, "-");
+  return slug || "release";
+}
+function renderReleasePrTemplate({
+  ctx,
+  scope,
+  version,
+  template
+}) {
+  const packageKeyValue = [...scope.packageKeys].sort().join("+");
+  const packageKeySlug = slugifyReleasePrToken(packageKeyValue);
+  const scopeValue = scope.kind === "package" && ctx ? packageNameForScope(ctx, scope) : scope.displayName;
+  return replaceTemplateToken(
+    replaceTemplateToken(
+      replaceTemplateToken(
+        replaceTemplateToken(
+          replaceTemplateToken(template, "scope", scopeValue),
+          "scopeSlug",
+          scope.slug
+        ),
+        "packageKey",
+        packageKeyValue
+      ),
+      "packageKeySlug",
+      packageKeySlug
+    ),
+    "version",
+    version
+  );
+}
+function renderReleasePrBranch(input) {
+  return renderReleasePrTemplate({
+    ...input,
+    template: input.template ?? "pubm/release/{scopeSlug}"
+  });
+}
+function renderReleasePrTitle(input) {
+  return renderReleasePrTemplate({
+    ...input,
+    template: input.template ?? "chore(release): {scope} {version}"
+  });
+}
+function packageNameForScope(ctx, scope) {
+  const key = scope.packageKeys[0];
+  return ctx.config.packages.find((pkg) => packageKey(pkg) === key)?.name ?? key;
+}
+function replaceTemplateToken(template, token, value) {
+  return template.split(`{${token}}`).join(value);
 }
 
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-utils/release-pr-overrides.ts
@@ -52219,23 +52226,17 @@ function buildReleasePrScopes(ctx, plan) {
   if (plan.mode === "single") {
     return [createScope("single", "single", pendingKeys, "release")];
   }
-  if (plan.mode === "fixed") {
+  if (releasePrGrouping(ctx) === "fixed") {
     return [createScope("fixed", "fixed", pendingKeys, "release")];
   }
-  const grouping = releasePrGrouping(ctx);
-  if (grouping === "single") {
-    return [createScope("single", "single", pendingKeys, "release")];
-  }
-  if (grouping === "independent") {
-    return pendingKeys.map((key) => createPackageScope(ctx, key));
-  }
-  return buildAutoIndependentScopes(ctx, pendingKeys);
+  return buildIndependentScopes(ctx, pendingKeys);
 }
-function buildAutoIndependentScopes(ctx, pendingKeys) {
+function buildIndependentScopes(ctx, pendingKeys) {
   const pending = new Set(pendingKeys);
   const scoped = /* @__PURE__ */ new Set();
   const scopes = [];
-  for (const group of ctx.config.fixed) {
+  const releasePrConfig = releasePrConfigFor(ctx);
+  for (const group of releasePrConfig.fixed ?? []) {
     const groupKeys = resolveConfiguredGroup(ctx, group);
     const pendingGroupKeys = groupKeys.filter((key) => pending.has(key));
     if (pendingGroupKeys.length === 0) continue;
@@ -52246,7 +52247,7 @@ function buildAutoIndependentScopes(ctx, pendingKeys) {
       createScope("fixed", scopeId("fixed", keys), keys, groupLabel(ctx, keys))
     );
   }
-  for (const group of ctx.config.linked) {
+  for (const group of releasePrConfig.linked ?? []) {
     const groupKeys = resolveConfiguredGroup(ctx, group);
     const keys = groupKeys.filter(
       (key) => pending.has(key) && !scoped.has(key)
@@ -52274,7 +52275,15 @@ function packageKeysForPlan(ctx, plan) {
   return [...plan.packages.keys()];
 }
 function releasePrGrouping(ctx) {
-  return ctx.config.releasePr?.grouping ?? "auto";
+  return releasePrConfigFor(ctx).grouping ?? ctx.config.versioning;
+}
+function releasePrConfigFor(ctx) {
+  const releasePr = ctx.config.releasePr;
+  return {
+    grouping: releasePr?.grouping,
+    fixed: releasePr?.fixed ?? ctx.config.fixed,
+    linked: releasePr?.linked ?? ctx.config.linked
+  };
 }
 function resolveConfiguredGroup(ctx, group) {
   const keys = /* @__PURE__ */ new Set();
