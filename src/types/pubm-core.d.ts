@@ -4,6 +4,7 @@ declare module "@pubm/core" {
 
 	export interface ChangesetRelease {
 		path: string;
+		ecosystem?: string;
 		type: BumpType;
 	}
 
@@ -14,6 +15,7 @@ declare module "@pubm/core" {
 	}
 
 	export interface PackageConfig {
+		name: string;
 		path: string;
 		version: string;
 		ecosystem: string;
@@ -41,7 +43,6 @@ declare module "@pubm/core" {
 			};
 			changelog: boolean | string;
 			pullRequest: {
-				enabled: boolean;
 				label: string;
 				branchTemplate?: string;
 				titleTemplate?: string;
@@ -135,6 +136,9 @@ declare module "@pubm/core" {
 		config: Record<string, unknown>,
 		cwd: string,
 	): Promise<ResolvedPubmConfig>;
+	export function createKeyResolver(
+		packages: PackageConfig[],
+	): (key: string) => string;
 	export function resolveOptions(options: Record<string, unknown>): unknown;
 	export function createContext(
 		config: ResolvedPubmConfig,

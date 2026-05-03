@@ -24496,9 +24496,6 @@ var init_en = __esm({
       "prompt.init.versioningIndependent": "independent \u2014 Each package versioned separately",
       "prompt.init.versioningFixed": "fixed \u2014 All packages share one version",
       "prompt.init.changelog": "Generate changelog?",
-      "prompt.init.changelogFormat": "Changelog format",
-      "prompt.init.changelogGithub": "github \u2014 Includes PR/commit links",
-      "prompt.init.changelogDefault": "default \u2014 Simple text format",
       "prompt.init.releaseDraft": "Create GitHub Release draft?",
       "prompt.init.changesets": "Enable changesets?",
       "prompt.init.ciWorkflow": "Set up CI workflow?",
@@ -26611,8 +26608,8 @@ var require_gt = __commonJS({
   "../pubm-issue-34-release-workflow/node_modules/.bun/semver@7.7.4/node_modules/semver/functions/gt.js"(exports, module) {
     "use strict";
     var compare = require_compare();
-    var gt = (a2, b, loose) => compare(a2, b, loose) > 0;
-    module.exports = gt;
+    var gt2 = (a2, b, loose) => compare(a2, b, loose) > 0;
+    module.exports = gt2;
   }
 });
 
@@ -26672,7 +26669,7 @@ var require_cmp = __commonJS({
     "use strict";
     var eq = require_eq();
     var neq = require_neq();
-    var gt = require_gt();
+    var gt2 = require_gt();
     var gte = require_gte();
     var lt = require_lt();
     var lte = require_lte();
@@ -26701,7 +26698,7 @@ var require_cmp = __commonJS({
         case "!=":
           return neq(a2, b, loose);
         case ">":
-          return gt(a2, b, loose);
+          return gt2(a2, b, loose);
         case ">=":
           return gte(a2, b, loose);
         case "<":
@@ -27381,7 +27378,7 @@ var require_min_version = __commonJS({
     "use strict";
     var SemVer6 = require_semver();
     var Range = require_range();
-    var gt = require_gt();
+    var gt2 = require_gt();
     var minVersion = (range, loose) => {
       range = new Range(range, loose);
       let minver = new SemVer6("0.0.0");
@@ -27409,7 +27406,7 @@ var require_min_version = __commonJS({
             /* fallthrough */
             case "":
             case ">=":
-              if (!setMin || gt(compver, setMin)) {
+              if (!setMin || gt2(compver, setMin)) {
                 setMin = compver;
               }
               break;
@@ -27421,7 +27418,7 @@ var require_min_version = __commonJS({
               throw new Error(`Unexpected operation: ${comparator.operator}`);
           }
         });
-        if (setMin && (!minver || gt(minver, setMin))) {
+        if (setMin && (!minver || gt2(minver, setMin))) {
           minver = setMin;
         }
       }
@@ -27459,7 +27456,7 @@ var require_outside = __commonJS({
     var { ANY } = Comparator;
     var Range = require_range();
     var satisfies2 = require_satisfies();
-    var gt = require_gt();
+    var gt2 = require_gt();
     var lt = require_lt();
     var lte = require_lte();
     var gte = require_gte();
@@ -27469,7 +27466,7 @@ var require_outside = __commonJS({
       let gtfn, ltefn, ltfn, comp, ecomp;
       switch (hilo) {
         case ">":
-          gtfn = gt;
+          gtfn = gt2;
           ltefn = lte;
           ltfn = lt;
           comp = ">";
@@ -27478,7 +27475,7 @@ var require_outside = __commonJS({
         case "<":
           gtfn = lt;
           ltefn = gte;
-          ltfn = gt;
+          ltfn = gt2;
           comp = "<";
           ecomp = "<=";
           break;
@@ -27656,10 +27653,10 @@ var require_subset = __commonJS({
         }
       }
       const eqSet = /* @__PURE__ */ new Set();
-      let gt, lt;
+      let gt2, lt;
       for (const c of sub) {
         if (c.operator === ">" || c.operator === ">=") {
-          gt = higherGT(gt, c, options);
+          gt2 = higherGT(gt2, c, options);
         } else if (c.operator === "<" || c.operator === "<=") {
           lt = lowerLT(lt, c, options);
         } else {
@@ -27670,16 +27667,16 @@ var require_subset = __commonJS({
         return null;
       }
       let gtltComp;
-      if (gt && lt) {
-        gtltComp = compare(gt.semver, lt.semver, options);
+      if (gt2 && lt) {
+        gtltComp = compare(gt2.semver, lt.semver, options);
         if (gtltComp > 0) {
           return null;
-        } else if (gtltComp === 0 && (gt.operator !== ">=" || lt.operator !== "<=")) {
+        } else if (gtltComp === 0 && (gt2.operator !== ">=" || lt.operator !== "<=")) {
           return null;
         }
       }
       for (const eq of eqSet) {
-        if (gt && !satisfies2(eq, String(gt), options)) {
+        if (gt2 && !satisfies2(eq, String(gt2), options)) {
           return null;
         }
         if (lt && !satisfies2(eq, String(lt), options)) {
@@ -27695,25 +27692,25 @@ var require_subset = __commonJS({
       let higher, lower;
       let hasDomLT, hasDomGT;
       let needDomLTPre = lt && !options.includePrerelease && lt.semver.prerelease.length ? lt.semver : false;
-      let needDomGTPre = gt && !options.includePrerelease && gt.semver.prerelease.length ? gt.semver : false;
+      let needDomGTPre = gt2 && !options.includePrerelease && gt2.semver.prerelease.length ? gt2.semver : false;
       if (needDomLTPre && needDomLTPre.prerelease.length === 1 && lt.operator === "<" && needDomLTPre.prerelease[0] === 0) {
         needDomLTPre = false;
       }
       for (const c of dom) {
         hasDomGT = hasDomGT || c.operator === ">" || c.operator === ">=";
         hasDomLT = hasDomLT || c.operator === "<" || c.operator === "<=";
-        if (gt) {
+        if (gt2) {
           if (needDomGTPre) {
             if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomGTPre.major && c.semver.minor === needDomGTPre.minor && c.semver.patch === needDomGTPre.patch) {
               needDomGTPre = false;
             }
           }
           if (c.operator === ">" || c.operator === ">=") {
-            higher = higherGT(gt, c, options);
-            if (higher === c && higher !== gt) {
+            higher = higherGT(gt2, c, options);
+            if (higher === c && higher !== gt2) {
               return false;
             }
-          } else if (gt.operator === ">=" && !satisfies2(gt.semver, String(c), options)) {
+          } else if (gt2.operator === ">=" && !satisfies2(gt2.semver, String(c), options)) {
             return false;
           }
         }
@@ -27732,14 +27729,14 @@ var require_subset = __commonJS({
             return false;
           }
         }
-        if (!c.operator && (lt || gt) && gtltComp !== 0) {
+        if (!c.operator && (lt || gt2) && gtltComp !== 0) {
           return false;
         }
       }
-      if (gt && hasDomLT && !lt && gtltComp !== 0) {
+      if (gt2 && hasDomLT && !lt && gtltComp !== 0) {
         return false;
       }
-      if (lt && hasDomGT && !gt && gtltComp !== 0) {
+      if (lt && hasDomGT && !gt2 && gtltComp !== 0) {
         return false;
       }
       if (needDomGTPre || needDomLTPre) {
@@ -27788,7 +27785,7 @@ var require_semver2 = __commonJS({
     var compareBuild = require_compare_build();
     var sort = require_sort();
     var rsort = require_rsort();
-    var gt = require_gt();
+    var gt2 = require_gt();
     var lt = require_lt();
     var eq = require_eq();
     var neq = require_neq();
@@ -27826,7 +27823,7 @@ var require_semver2 = __commonJS({
       compareBuild,
       sort,
       rsort,
-      gt,
+      gt: gt2,
       lt,
       eq,
       neq,
@@ -50422,7 +50419,6 @@ var defaultRelease = {
   changelog: true
 };
 var defaultReleasePullRequest = {
-  enabled: false,
   branchTemplate: "pubm/release/{scopeSlug}",
   titleTemplate: "chore(release): {scope} {version}",
   label: "pubm:release-pr",
@@ -50520,9 +50516,16 @@ async function resolveConfig(config, cwd) {
     });
   }
   const release = resolveReleaseConfig(config.release);
+  const configWithoutLegacyReleaseKeys = {
+    ...config
+  };
+  delete configWithoutLegacyReleaseKeys.versionSources;
+  delete configWithoutLegacyReleaseKeys.conventionalCommits;
+  delete configWithoutLegacyReleaseKeys.releasePr;
+  delete configWithoutLegacyReleaseKeys.changelogFormat;
   return {
     ...defaultConfig,
-    ...config,
+    ...configWithoutLegacyReleaseKeys,
     packages,
     validate: { ...defaultValidate, ...config.validate },
     rollback: {
@@ -50573,15 +50576,17 @@ function resolveReleasePullRequestConfig(config, inherited) {
   const linked = config?.linked ?? inherited.linked;
   const grouping = config?.grouping && config.grouping !== "inherit" ? config.grouping : inherited.versioning;
   return {
-    ...defaultReleasePullRequest,
-    ...config,
+    branchTemplate: config?.branchTemplate ?? defaultReleasePullRequest.branchTemplate,
+    titleTemplate: config?.titleTemplate ?? defaultReleasePullRequest.titleTemplate,
+    label: config?.label ?? defaultReleasePullRequest.label,
     grouping,
     bumpLabels: {
       ...defaultReleasePullRequest.bumpLabels,
       ...config?.bumpLabels
     },
     fixed: fixed.map((group) => [...group]),
-    linked: linked.map((group) => [...group])
+    linked: linked.map((group) => [...group]),
+    unversionedChanges: config?.unversionedChanges ?? defaultReleasePullRequest.unversionedChanges
   };
 }
 function resolveEcosystemKey(pkg, _entry) {

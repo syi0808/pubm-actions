@@ -51,6 +51,27 @@ describe("validateChangesets", () => {
 		});
 	});
 
+	it("validates package names through the core package key resolver", () => {
+		makePackage("packages/core");
+		writeChangeset(
+			".pubm/changesets/name-key.md",
+			'---\n"@scope/core": minor\n---\n\nAdd named package support\n',
+		);
+
+		const result = validateChangesets(
+			[".pubm/changesets/name-key.md"],
+			cwd,
+			(key) => (key === "@scope/core" ? "packages/core::js" : key),
+		);
+
+		expect(result.errors).toHaveLength(0);
+		expect(result.valid[0].releases[0]).toEqual({
+			path: "packages/core",
+			ecosystem: "js",
+			type: "minor",
+		});
+	});
+
 	it("reports error for missing frontmatter", () => {
 		writeChangeset(".pubm/changesets/bad-file.md", "No frontmatter here\n");
 

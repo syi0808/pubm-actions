@@ -1,5 +1,12 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
+import {
+	createKeyResolver,
+	loadConfig,
+	resolveConfig,
+	type ResolvedPubmConfig,
+} from "@pubm/core";
+import path from "node:path";
 import { upsertComment } from "../comment.js";
 import { detectChangesetFiles } from "../detect.js";
 import {
@@ -15,6 +22,8 @@ async function run(): Promise<void> {
 	const shouldComment = core.getInput("comment") === "true";
 	const token = core.getInput("token");
 	const workingDirectory = core.getInput("working-directory");
+	const cwd = path.resolve(process.cwd(), workingDirectory || ".");
+	const changesetConfig = await loadChangesetCheckConfig(cwd);
 
 	const octokit = github.getOctokit(token);
 	const { context } = github;
@@ -46,7 +55,11 @@ async function run(): Promise<void> {
 
 	// Detect changeset files
 	const baseBranch = pr.base.ref;
-	const files = detectChangesetFiles(baseBranch, workingDirectory);
+	const files = detectChangesetFiles(
+		baseBranch,
+		cwd,
+		changesetConfig.directory,
+	);
 	core.setOutput("changeset-files", files.join("\n"));
 
 	if (files.length === 0) {
@@ -61,7 +74,7 @@ async function run(): Promise<void> {
 	}
 
 	// Validate changesets
-	const result = validateChangesets(files, workingDirectory);
+	const result = validateChangesets(files, cwd, changesetConfig.resolveKey);
 	core.setOutput("errors", JSON.stringify(result.errors));
 
 	if (result.errors.length > 0) {
@@ -82,6 +95,18 @@ async function run(): Promise<void> {
 	if (shouldComment) {
 		await upsertComment(octokit, commentCtx, successBody(result.valid));
 	}
+}
+
+async function loadChangesetCheckConfig(cwd: string): Promise<{
+	directory: string;
+	resolveKey: (key: string) => string | undefined;
+}> {
+	const loaded = (await loadConfig(cwd)) ?? {};
+	const config: ResolvedPubmConfig = await resolveConfig(loaded, cwd);
+	return {
+		directory: config.release.changesets.directory,
+		resolveKey: createKeyResolver(config.packages),
+	};
 }
 
 run().catch((err) => {

@@ -1077,14 +1077,14 @@ var require_util = __commonJS({
         }
         const port = url.port != null ? url.port : url.protocol === "https:" ? 443 : 80;
         let origin = url.origin != null ? url.origin : `${url.protocol || ""}//${url.hostname || ""}:${port}`;
-        let path11 = url.path != null ? url.path : `${url.pathname || ""}${url.search || ""}`;
+        let path15 = url.path != null ? url.path : `${url.pathname || ""}${url.search || ""}`;
         if (origin[origin.length - 1] === "/") {
           origin = origin.slice(0, origin.length - 1);
         }
-        if (path11 && path11[0] !== "/") {
-          path11 = `/${path11}`;
+        if (path15 && path15[0] !== "/") {
+          path15 = `/${path15}`;
         }
-        return new URL(`${origin}${path11}`);
+        return new URL(`${origin}${path15}`);
       }
       if (!isHttpOrHttpsPrefixed(url.origin || url.protocol)) {
         throw new InvalidArgumentError("Invalid URL protocol: the URL must start with `http:` or `https:`.");
@@ -1535,39 +1535,39 @@ var require_diagnostics = __commonJS({
       });
       diagnosticsChannel.channel("undici:client:sendHeaders").subscribe((evt) => {
         const {
-          request: { method, path: path11, origin }
+          request: { method, path: path15, origin }
         } = evt;
-        debuglog("sending request to %s %s/%s", method, origin, path11);
+        debuglog("sending request to %s %s/%s", method, origin, path15);
       });
       diagnosticsChannel.channel("undici:request:headers").subscribe((evt) => {
         const {
-          request: { method, path: path11, origin },
+          request: { method, path: path15, origin },
           response: { statusCode }
         } = evt;
         debuglog(
           "received response to %s %s/%s - HTTP %d",
           method,
           origin,
-          path11,
+          path15,
           statusCode
         );
       });
       diagnosticsChannel.channel("undici:request:trailers").subscribe((evt) => {
         const {
-          request: { method, path: path11, origin }
+          request: { method, path: path15, origin }
         } = evt;
-        debuglog("trailers received from %s %s/%s", method, origin, path11);
+        debuglog("trailers received from %s %s/%s", method, origin, path15);
       });
       diagnosticsChannel.channel("undici:request:error").subscribe((evt) => {
         const {
-          request: { method, path: path11, origin },
+          request: { method, path: path15, origin },
           error: error3
         } = evt;
         debuglog(
           "request to %s %s/%s errored - %s",
           method,
           origin,
-          path11,
+          path15,
           error3.message
         );
       });
@@ -1616,9 +1616,9 @@ var require_diagnostics = __commonJS({
         });
         diagnosticsChannel.channel("undici:client:sendHeaders").subscribe((evt) => {
           const {
-            request: { method, path: path11, origin }
+            request: { method, path: path15, origin }
           } = evt;
-          debuglog("sending request to %s %s/%s", method, origin, path11);
+          debuglog("sending request to %s %s/%s", method, origin, path15);
         });
       }
       diagnosticsChannel.channel("undici:websocket:open").subscribe((evt) => {
@@ -1681,7 +1681,7 @@ var require_request = __commonJS({
     var kHandler = /* @__PURE__ */ Symbol("handler");
     var Request = class {
       constructor(origin, {
-        path: path11,
+        path: path15,
         method,
         body,
         headers,
@@ -1696,11 +1696,11 @@ var require_request = __commonJS({
         expectContinue,
         servername
       }, handler2) {
-        if (typeof path11 !== "string") {
+        if (typeof path15 !== "string") {
           throw new InvalidArgumentError("path must be a string");
-        } else if (path11[0] !== "/" && !(path11.startsWith("http://") || path11.startsWith("https://")) && method !== "CONNECT") {
+        } else if (path15[0] !== "/" && !(path15.startsWith("http://") || path15.startsWith("https://")) && method !== "CONNECT") {
           throw new InvalidArgumentError("path must be an absolute URL or start with a slash");
-        } else if (invalidPathRegex.test(path11)) {
+        } else if (invalidPathRegex.test(path15)) {
           throw new InvalidArgumentError("invalid request path");
         }
         if (typeof method !== "string") {
@@ -1766,7 +1766,7 @@ var require_request = __commonJS({
         this.completed = false;
         this.aborted = false;
         this.upgrade = upgrade || null;
-        this.path = query ? buildURL(path11, query) : path11;
+        this.path = query ? buildURL(path15, query) : path15;
         this.origin = origin;
         this.idempotent = idempotent == null ? method === "HEAD" || method === "GET" : idempotent;
         this.blocking = blocking == null ? false : blocking;
@@ -6285,7 +6285,7 @@ var require_client_h1 = __commonJS({
       return method !== "GET" && method !== "HEAD" && method !== "OPTIONS" && method !== "TRACE" && method !== "CONNECT";
     }
     function writeH1(client, request2) {
-      const { method, path: path11, host, upgrade, blocking, reset } = request2;
+      const { method, path: path15, host, upgrade, blocking, reset } = request2;
       let { body, headers, contentLength } = request2;
       const expectsPayload = method === "PUT" || method === "POST" || method === "PATCH" || method === "QUERY" || method === "PROPFIND" || method === "PROPPATCH";
       if (util.isFormDataLike(body)) {
@@ -6351,7 +6351,7 @@ var require_client_h1 = __commonJS({
       if (blocking) {
         socket[kBlocking] = true;
       }
-      let header = `${method} ${path11} HTTP/1.1\r
+      let header = `${method} ${path15} HTTP/1.1\r
 `;
       if (typeof host === "string") {
         header += `host: ${host}\r
@@ -6877,7 +6877,7 @@ var require_client_h2 = __commonJS({
     }
     function writeH2(client, request2) {
       const session = client[kHTTP2Session];
-      const { method, path: path11, host, upgrade, expectContinue, signal, headers: reqHeaders } = request2;
+      const { method, path: path15, host, upgrade, expectContinue, signal, headers: reqHeaders } = request2;
       let { body } = request2;
       if (upgrade) {
         util.errorRequest(client, request2, new Error("Upgrade not supported for H2"));
@@ -6944,7 +6944,7 @@ var require_client_h2 = __commonJS({
         });
         return true;
       }
-      headers[HTTP2_HEADER_PATH] = path11;
+      headers[HTTP2_HEADER_PATH] = path15;
       headers[HTTP2_HEADER_SCHEME] = "https";
       const expectsPayload = method === "PUT" || method === "POST" || method === "PATCH";
       if (body && typeof body.read === "function") {
@@ -7297,9 +7297,9 @@ var require_redirect_handler = __commonJS({
           return this.handler.onHeaders(statusCode, headers, resume, statusText);
         }
         const { origin, pathname, search } = util.parseURL(new URL(this.location, this.opts.origin && new URL(this.opts.path, this.opts.origin)));
-        const path11 = search ? `${pathname}${search}` : pathname;
+        const path15 = search ? `${pathname}${search}` : pathname;
         this.opts.headers = cleanRequestHeaders(this.opts.headers, statusCode === 303, this.opts.origin !== origin);
-        this.opts.path = path11;
+        this.opts.path = path15;
         this.opts.origin = origin;
         this.opts.maxRedirections = 0;
         this.opts.query = null;
@@ -8533,10 +8533,10 @@ var require_proxy_agent = __commonJS({
         };
         const {
           origin,
-          path: path11 = "/",
+          path: path15 = "/",
           headers = {}
         } = opts;
-        opts.path = origin + path11;
+        opts.path = origin + path15;
         if (!("host" in headers) && !("Host" in headers)) {
           const { host } = new URL2(origin);
           headers.host = host;
@@ -10457,20 +10457,20 @@ var require_mock_utils = __commonJS({
       }
       return true;
     }
-    function safeUrl(path11) {
-      if (typeof path11 !== "string") {
-        return path11;
+    function safeUrl(path15) {
+      if (typeof path15 !== "string") {
+        return path15;
       }
-      const pathSegments = path11.split("?");
+      const pathSegments = path15.split("?");
       if (pathSegments.length !== 2) {
-        return path11;
+        return path15;
       }
       const qp = new URLSearchParams(pathSegments.pop());
       qp.sort();
       return [...pathSegments, qp.toString()].join("?");
     }
-    function matchKey(mockDispatch2, { path: path11, method, body, headers }) {
-      const pathMatch = matchValue(mockDispatch2.path, path11);
+    function matchKey(mockDispatch2, { path: path15, method, body, headers }) {
+      const pathMatch = matchValue(mockDispatch2.path, path15);
       const methodMatch = matchValue(mockDispatch2.method, method);
       const bodyMatch = typeof mockDispatch2.body !== "undefined" ? matchValue(mockDispatch2.body, body) : true;
       const headersMatch = matchHeaders(mockDispatch2, headers);
@@ -10492,7 +10492,7 @@ var require_mock_utils = __commonJS({
     function getMockDispatch(mockDispatches, key) {
       const basePath = key.query ? buildURL(key.path, key.query) : key.path;
       const resolvedPath = typeof basePath === "string" ? safeUrl(basePath) : basePath;
-      let matchedMockDispatches = mockDispatches.filter(({ consumed }) => !consumed).filter(({ path: path11 }) => matchValue(safeUrl(path11), resolvedPath));
+      let matchedMockDispatches = mockDispatches.filter(({ consumed }) => !consumed).filter(({ path: path15 }) => matchValue(safeUrl(path15), resolvedPath));
       if (matchedMockDispatches.length === 0) {
         throw new MockNotMatchedError(`Mock dispatch not matched for path '${resolvedPath}'`);
       }
@@ -10530,9 +10530,9 @@ var require_mock_utils = __commonJS({
       }
     }
     function buildKey(opts) {
-      const { path: path11, method, body, headers, query } = opts;
+      const { path: path15, method, body, headers, query } = opts;
       return {
-        path: path11,
+        path: path15,
         method,
         body,
         headers,
@@ -10995,10 +10995,10 @@ var require_pending_interceptors_formatter = __commonJS({
       }
       format(pendingInterceptors) {
         const withPrettyHeaders = pendingInterceptors.map(
-          ({ method, path: path11, data: { statusCode }, persist, times, timesInvoked, origin }) => ({
+          ({ method, path: path15, data: { statusCode }, persist, times, timesInvoked, origin }) => ({
             Method: method,
             Origin: origin,
-            Path: path11,
+            Path: path15,
             "Status code": statusCode,
             Persistent: persist ? PERSISTENT : NOT_PERSISTENT,
             Invocations: timesInvoked,
@@ -15879,9 +15879,9 @@ var require_util6 = __commonJS({
         }
       }
     }
-    function validateCookiePath(path11) {
-      for (let i = 0; i < path11.length; ++i) {
-        const code = path11.charCodeAt(i);
+    function validateCookiePath(path15) {
+      for (let i = 0; i < path15.length; ++i) {
+        const code = path15.charCodeAt(i);
         if (code < 32 || // exclude CTLs (0-31)
         code === 127 || // DEL
         code === 59) {
@@ -18521,11 +18521,11 @@ var require_undici = __commonJS({
           if (typeof opts.path !== "string") {
             throw new InvalidArgumentError("invalid opts.path");
           }
-          let path11 = opts.path;
+          let path15 = opts.path;
           if (!opts.path.startsWith("/")) {
-            path11 = `/${path11}`;
+            path15 = `/${path15}`;
           }
-          url = new URL(util.parseOrigin(url).origin + path11);
+          url = new URL(util.parseOrigin(url).origin + path15);
         } else {
           if (!opts) {
             opts = typeof url === "object" ? url : {};
@@ -23294,14 +23294,14 @@ function mergeConfig(c1, c2) {
     }, {})
   };
 }
-function mergeConfigs(defaultConfig, configs) {
+function mergeConfigs(defaultConfig2, configs) {
   if (!configs) {
-    return defaultConfig;
+    return defaultConfig2;
   }
-  return Object.keys(defaultConfig).reduce((all, k2) => {
-    all[k2] = mergeConfig(defaultConfig[k2], configs[k2]);
+  return Object.keys(defaultConfig2).reduce((all, k2) => {
+    all[k2] = mergeConfig(defaultConfig2[k2], configs[k2]);
     return all;
-  }, { ...defaultConfig });
+  }, { ...defaultConfig2 });
 }
 function createFastMemoizeCache(store) {
   return { create() {
@@ -24496,9 +24496,6 @@ var init_en = __esm({
       "prompt.init.versioningIndependent": "independent \u2014 Each package versioned separately",
       "prompt.init.versioningFixed": "fixed \u2014 All packages share one version",
       "prompt.init.changelog": "Generate changelog?",
-      "prompt.init.changelogFormat": "Changelog format",
-      "prompt.init.changelogGithub": "github \u2014 Includes PR/commit links",
-      "prompt.init.changelogDefault": "default \u2014 Simple text format",
       "prompt.init.releaseDraft": "Create GitHub Release draft?",
       "prompt.init.changesets": "Enable changesets?",
       "prompt.init.ciWorkflow": "Set up CI workflow?",
@@ -25644,7 +25641,7 @@ import {
   writeFileSync
 } from "node:fs";
 import { homedir } from "node:os";
-import path2 from "node:path";
+import path from "node:path";
 function e(e2, f) {
   const c = createCipheriv(a, createHash("sha-256").update(f).digest(), l);
   return c.update(e2, "utf8", "hex") + c.final("hex");
@@ -25663,7 +25660,7 @@ var init_db = __esm({
     k = `${n.rdev}${n.birthtimeMs}${n.nlink}${n.gid}`;
     l = createHash("md5").update(k).digest();
     Db = class {
-      path = path2.resolve(h, ".pubm");
+      path = path.resolve(h, ".pubm");
       constructor() {
         try {
           if (!statSync(this.path).isDirectory()) {
@@ -25682,7 +25679,7 @@ var init_db = __esm({
       set(field, value) {
         try {
           writeFileSync(
-            path2.resolve(
+            path.resolve(
               this.path,
               Buffer.from(e(field, field)).toString("base64")
             ),
@@ -25696,7 +25693,7 @@ var init_db = __esm({
         }
       }
       get(field) {
-        const filePath = path2.resolve(
+        const filePath = path.resolve(
           this.path,
           Buffer.from(e(field, field)).toString("base64")
         );
@@ -25713,7 +25710,7 @@ var init_db = __esm({
         }
       }
       delete(field) {
-        const filePath = path2.resolve(
+        const filePath = path.resolve(
           this.path,
           Buffer.from(e(field, field)).toString("base64")
         );
@@ -26611,8 +26608,8 @@ var require_gt = __commonJS({
   "../pubm-issue-34-release-workflow/node_modules/.bun/semver@7.7.4/node_modules/semver/functions/gt.js"(exports, module) {
     "use strict";
     var compare = require_compare();
-    var gt = (a2, b, loose) => compare(a2, b, loose) > 0;
-    module.exports = gt;
+    var gt2 = (a2, b, loose) => compare(a2, b, loose) > 0;
+    module.exports = gt2;
   }
 });
 
@@ -26672,7 +26669,7 @@ var require_cmp = __commonJS({
     "use strict";
     var eq = require_eq();
     var neq = require_neq();
-    var gt = require_gt();
+    var gt2 = require_gt();
     var gte = require_gte();
     var lt = require_lt();
     var lte = require_lte();
@@ -26701,7 +26698,7 @@ var require_cmp = __commonJS({
         case "!=":
           return neq(a2, b, loose);
         case ">":
-          return gt(a2, b, loose);
+          return gt2(a2, b, loose);
         case ">=":
           return gte(a2, b, loose);
         case "<":
@@ -27381,7 +27378,7 @@ var require_min_version = __commonJS({
     "use strict";
     var SemVer6 = require_semver();
     var Range = require_range();
-    var gt = require_gt();
+    var gt2 = require_gt();
     var minVersion = (range, loose) => {
       range = new Range(range, loose);
       let minver = new SemVer6("0.0.0");
@@ -27409,7 +27406,7 @@ var require_min_version = __commonJS({
             /* fallthrough */
             case "":
             case ">=":
-              if (!setMin || gt(compver, setMin)) {
+              if (!setMin || gt2(compver, setMin)) {
                 setMin = compver;
               }
               break;
@@ -27421,7 +27418,7 @@ var require_min_version = __commonJS({
               throw new Error(`Unexpected operation: ${comparator.operator}`);
           }
         });
-        if (setMin && (!minver || gt(minver, setMin))) {
+        if (setMin && (!minver || gt2(minver, setMin))) {
           minver = setMin;
         }
       }
@@ -27459,7 +27456,7 @@ var require_outside = __commonJS({
     var { ANY } = Comparator;
     var Range = require_range();
     var satisfies2 = require_satisfies();
-    var gt = require_gt();
+    var gt2 = require_gt();
     var lt = require_lt();
     var lte = require_lte();
     var gte = require_gte();
@@ -27469,7 +27466,7 @@ var require_outside = __commonJS({
       let gtfn, ltefn, ltfn, comp, ecomp;
       switch (hilo) {
         case ">":
-          gtfn = gt;
+          gtfn = gt2;
           ltefn = lte;
           ltfn = lt;
           comp = ">";
@@ -27478,7 +27475,7 @@ var require_outside = __commonJS({
         case "<":
           gtfn = lt;
           ltefn = gte;
-          ltfn = gt;
+          ltfn = gt2;
           comp = "<";
           ecomp = "<=";
           break;
@@ -27656,10 +27653,10 @@ var require_subset = __commonJS({
         }
       }
       const eqSet = /* @__PURE__ */ new Set();
-      let gt, lt;
+      let gt2, lt;
       for (const c of sub) {
         if (c.operator === ">" || c.operator === ">=") {
-          gt = higherGT(gt, c, options);
+          gt2 = higherGT(gt2, c, options);
         } else if (c.operator === "<" || c.operator === "<=") {
           lt = lowerLT(lt, c, options);
         } else {
@@ -27670,16 +27667,16 @@ var require_subset = __commonJS({
         return null;
       }
       let gtltComp;
-      if (gt && lt) {
-        gtltComp = compare(gt.semver, lt.semver, options);
+      if (gt2 && lt) {
+        gtltComp = compare(gt2.semver, lt.semver, options);
         if (gtltComp > 0) {
           return null;
-        } else if (gtltComp === 0 && (gt.operator !== ">=" || lt.operator !== "<=")) {
+        } else if (gtltComp === 0 && (gt2.operator !== ">=" || lt.operator !== "<=")) {
           return null;
         }
       }
       for (const eq of eqSet) {
-        if (gt && !satisfies2(eq, String(gt), options)) {
+        if (gt2 && !satisfies2(eq, String(gt2), options)) {
           return null;
         }
         if (lt && !satisfies2(eq, String(lt), options)) {
@@ -27695,25 +27692,25 @@ var require_subset = __commonJS({
       let higher, lower;
       let hasDomLT, hasDomGT;
       let needDomLTPre = lt && !options.includePrerelease && lt.semver.prerelease.length ? lt.semver : false;
-      let needDomGTPre = gt && !options.includePrerelease && gt.semver.prerelease.length ? gt.semver : false;
+      let needDomGTPre = gt2 && !options.includePrerelease && gt2.semver.prerelease.length ? gt2.semver : false;
       if (needDomLTPre && needDomLTPre.prerelease.length === 1 && lt.operator === "<" && needDomLTPre.prerelease[0] === 0) {
         needDomLTPre = false;
       }
       for (const c of dom) {
         hasDomGT = hasDomGT || c.operator === ">" || c.operator === ">=";
         hasDomLT = hasDomLT || c.operator === "<" || c.operator === "<=";
-        if (gt) {
+        if (gt2) {
           if (needDomGTPre) {
             if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomGTPre.major && c.semver.minor === needDomGTPre.minor && c.semver.patch === needDomGTPre.patch) {
               needDomGTPre = false;
             }
           }
           if (c.operator === ">" || c.operator === ">=") {
-            higher = higherGT(gt, c, options);
-            if (higher === c && higher !== gt) {
+            higher = higherGT(gt2, c, options);
+            if (higher === c && higher !== gt2) {
               return false;
             }
-          } else if (gt.operator === ">=" && !satisfies2(gt.semver, String(c), options)) {
+          } else if (gt2.operator === ">=" && !satisfies2(gt2.semver, String(c), options)) {
             return false;
           }
         }
@@ -27732,14 +27729,14 @@ var require_subset = __commonJS({
             return false;
           }
         }
-        if (!c.operator && (lt || gt) && gtltComp !== 0) {
+        if (!c.operator && (lt || gt2) && gtltComp !== 0) {
           return false;
         }
       }
-      if (gt && hasDomLT && !lt && gtltComp !== 0) {
+      if (gt2 && hasDomLT && !lt && gtltComp !== 0) {
         return false;
       }
-      if (lt && hasDomGT && !gt && gtltComp !== 0) {
+      if (lt && hasDomGT && !gt2 && gtltComp !== 0) {
         return false;
       }
       if (needDomGTPre || needDomLTPre) {
@@ -27788,7 +27785,7 @@ var require_semver2 = __commonJS({
     var compareBuild = require_compare_build();
     var sort = require_sort();
     var rsort = require_rsort();
-    var gt = require_gt();
+    var gt2 = require_gt();
     var lt = require_lt();
     var eq = require_eq();
     var neq = require_neq();
@@ -27826,7 +27823,7 @@ var require_semver2 = __commonJS({
       compareBuild,
       sort,
       rsort,
-      gt,
+      gt: gt2,
       lt,
       eq,
       neq,
@@ -31015,7 +31012,7 @@ var init_dist2 = __esm({
 });
 
 // ../pubm-issue-34-release-workflow/packages/core/src/registry/crates.ts
-import path3 from "node:path";
+import path2 from "node:path";
 import process4 from "node:process";
 function cleanCargoStderr(stderr) {
   return stderr.split("\n").filter((line) => {
@@ -31148,7 +31145,7 @@ var init_crates = __esm({
         try {
           const args = ["publish"];
           if (this.packagePath) {
-            args.push("--manifest-path", path3.join(this.packagePath, "Cargo.toml"));
+            args.push("--manifest-path", path2.join(this.packagePath, "Cargo.toml"));
           }
           await exec("cargo", args, { throwOnError: true });
           return true;
@@ -31165,7 +31162,7 @@ ${cleanCargoStderr(stderr)}` : "Failed to run `cargo publish`";
       async unpublish(_packageName, version) {
         const args = ["yank", "--vers", version];
         if (this.packagePath) {
-          args.push("--manifest-path", path3.join(this.packagePath, "Cargo.toml"));
+          args.push("--manifest-path", path2.join(this.packagePath, "Cargo.toml"));
         }
         await exec("cargo", args, { throwOnError: true });
       }
@@ -31173,7 +31170,7 @@ ${cleanCargoStderr(stderr)}` : "Failed to run `cargo publish`";
         try {
           const args = ["publish", "--dry-run"];
           if (this.packagePath) {
-            args.push("--manifest-path", path3.join(this.packagePath, "Cargo.toml"));
+            args.push("--manifest-path", path2.join(this.packagePath, "Cargo.toml"));
           }
           await exec("cargo", args, { throwOnError: true });
         } catch (error3) {
@@ -31301,8 +31298,8 @@ var init_descriptor = __esm({
   "../pubm-issue-34-release-workflow/packages/core/src/ecosystem/descriptor.ts"() {
     "use strict";
     EcosystemDescriptor = class {
-      constructor(path11) {
-        this.path = path11;
+      constructor(path15) {
+        this.path = path15;
       }
     };
   }
@@ -31315,8 +31312,8 @@ var init_rust_descriptor = __esm({
     "use strict";
     init_descriptor();
     RustEcosystemDescriptor = class extends EcosystemDescriptor {
-      constructor(path11, cratesName) {
-        super(path11);
+      constructor(path15, cratesName) {
+        super(path15);
         this.cratesName = cratesName;
       }
       get displayName() {
@@ -31331,7 +31328,7 @@ var init_rust_descriptor = __esm({
 
 // ../pubm-issue-34-release-workflow/packages/core/src/ecosystem/rust.ts
 import { readFile as readFile3, stat as stat4, writeFile as writeFile2 } from "node:fs/promises";
-import path4 from "node:path";
+import path3 from "node:path";
 var RustEcosystem;
 var init_rust = __esm({
   "../pubm-issue-34-release-workflow/packages/core/src/ecosystem/rust.ts"() {
@@ -31349,7 +31346,7 @@ var init_rust = __esm({
         return [CratesPackageRegistry];
       }
       async writeVersion(newVersion) {
-        const filePath = path4.join(this.packagePath, "Cargo.toml");
+        const filePath = path3.join(this.packagePath, "Cargo.toml");
         const raw = await readFile3(filePath, "utf-8");
         const cargo = parse5(raw);
         const pkg = cargo.package;
@@ -31361,7 +31358,7 @@ var init_rust = __esm({
        * This ensures `cargo publish` works when crates depend on each other via path.
        */
       async updateSiblingDependencyVersions(siblingVersions) {
-        const filePath = path4.join(this.packagePath, "Cargo.toml");
+        const filePath = path3.join(this.packagePath, "Cargo.toml");
         const raw = await readFile3(filePath, "utf-8");
         const cargo = parse5(raw);
         let modified = false;
@@ -31388,7 +31385,7 @@ var init_rust = __esm({
         try {
           const name = await this.packageName();
           await exec("cargo", ["update", "--package", name], {
-            nodeOptions: { cwd: path4.dirname(lockfilePath) }
+            nodeOptions: { cwd: path3.dirname(lockfilePath) }
           });
           return lockfilePath;
         } catch (error3) {
@@ -31401,14 +31398,14 @@ var init_rust = __esm({
       }
       async findLockfile() {
         let dir = this.packagePath;
-        const { root } = path4.parse(dir);
+        const { root } = path3.parse(dir);
         while (dir !== root) {
-          const candidate = path4.join(dir, "Cargo.lock");
+          const candidate = path3.join(dir, "Cargo.lock");
           try {
             if ((await stat4(candidate)).isFile()) return candidate;
           } catch {
           }
-          dir = path4.dirname(dir);
+          dir = path3.dirname(dir);
         }
         return void 0;
       }
@@ -31439,6 +31436,9 @@ var init_rust = __esm({
 });
 
 // ../pubm-issue-34-release-workflow/packages/core/src/utils/package-key.ts
+function packageKey(pkg) {
+  return `${pkg.path}::${pkg.ecosystem}`;
+}
 function pathFromKey(key) {
   if (!key) return "";
   const sep2 = key.lastIndexOf("::");
@@ -32952,21 +32952,21 @@ ${stderr}` : ""}`,
 
 // ../pubm-issue-34-release-workflow/packages/core/src/utils/package.ts
 import { stat as stat5 } from "node:fs/promises";
-import path5 from "node:path";
+import path4 from "node:path";
 import process9 from "node:process";
 async function findOutFile(file, { cwd = process9.cwd() } = {}) {
   let directory = cwd;
   let filePath = "";
-  const { root } = path5.parse(cwd);
+  const { root } = path4.parse(cwd);
   while (directory) {
-    filePath = path5.join(directory, file);
+    filePath = path4.join(directory, file);
     try {
       if ((await stat5(filePath)).isFile()) {
         break;
       }
     } catch {
     }
-    directory = path5.dirname(directory);
+    directory = path4.dirname(directory);
     if (directory === root) return null;
   }
   return filePath;
@@ -33020,8 +33020,8 @@ var init_js_descriptor = __esm({
     "use strict";
     init_descriptor();
     JsEcosystemDescriptor = class extends EcosystemDescriptor {
-      constructor(path11, npmName, jsrName) {
-        super(path11);
+      constructor(path15, npmName, jsrName) {
+        super(path15);
         this.npmName = npmName;
         this.jsrName = jsrName;
       }
@@ -33041,7 +33041,7 @@ var init_js_descriptor = __esm({
 // ../pubm-issue-34-release-workflow/packages/core/src/ecosystem/js.ts
 import { existsSync as existsSync3, readFileSync as readFileSync3, writeFileSync as writeFileSync3 } from "node:fs";
 import { readFile as readFile5, stat as stat6, writeFile as writeFile3 } from "node:fs/promises";
-import path6 from "node:path";
+import path5 from "node:path";
 async function fileExists(filePath) {
   try {
     const s = await stat6(filePath);
@@ -33064,7 +33064,7 @@ var init_js = __esm({
     JsEcosystem = class extends Ecosystem {
       static async detect(packagePath) {
         if (await NpmPackageRegistry.reader.exists(packagePath)) return true;
-        return await fileExists(path6.join(packagePath, "deno.json")) || await fileExists(path6.join(packagePath, "deno.jsonc"));
+        return await fileExists(path5.join(packagePath, "deno.json")) || await fileExists(path5.join(packagePath, "deno.jsonc"));
       }
       registryClasses() {
         return [
@@ -33075,7 +33075,7 @@ var init_js = __esm({
       async writeVersion(newVersion) {
         const files = ["package.json", "jsr.json", "deno.json", "deno.jsonc"];
         for (const file of files) {
-          const filePath = path6.join(this.packagePath, file);
+          const filePath = path5.join(this.packagePath, file);
           try {
             const content = await readFile5(filePath, "utf-8");
             await writeFile3(
@@ -33099,7 +33099,7 @@ var init_js = __esm({
         return { cmd: pm, args: ["run", script] };
       }
       async validateScript(script, _type) {
-        const pkgPath = path6.join(this.packagePath, "package.json");
+        const pkgPath = path5.join(this.packagePath, "package.json");
         try {
           const raw = await readFile5(pkgPath, "utf-8");
           const { scripts } = JSON.parse(raw);
@@ -33119,11 +33119,11 @@ var init_js = __esm({
         const found = await this.findLockfile();
         if (!found) return void 0;
         const { lockfilePath, packageManager } = found;
-        const lockfileDir = path6.dirname(lockfilePath);
+        const lockfileDir = path5.dirname(lockfilePath);
         try {
           let isYarnBerry;
           if (packageManager === "yarn") {
-            const yarnrcPath = path6.join(lockfileDir, ".yarnrc.yml");
+            const yarnrcPath = path5.join(lockfileDir, ".yarnrc.yml");
             try {
               isYarnBerry = (await stat6(yarnrcPath)).isFile();
             } catch {
@@ -33149,11 +33149,11 @@ var init_js = __esm({
        */
       async findLockfile() {
         let dir = this.packagePath;
-        const { root } = path6.parse(dir);
+        const { root } = path5.parse(dir);
         while (dir !== root) {
           for (const [pm, files] of Object.entries(lockFiles)) {
             for (const file of files) {
-              const candidate = path6.join(dir, file);
+              const candidate = path5.join(dir, file);
               try {
                 if ((await stat6(candidate)).isFile()) {
                   return {
@@ -33165,13 +33165,13 @@ var init_js = __esm({
               }
             }
           }
-          dir = path6.dirname(dir);
+          dir = path5.dirname(dir);
         }
         return void 0;
       }
       async resolvePublishDependencies(workspaceVersions) {
         const backups = /* @__PURE__ */ new Map();
-        const manifestPath = path6.join(this.packagePath, "package.json");
+        const manifestPath = path5.join(this.packagePath, "package.json");
         if (!existsSync3(manifestPath)) return backups;
         const original = readFileSync3(manifestPath, "utf-8");
         const pkg = JSON.parse(original);
@@ -33222,6 +33222,11 @@ var init_js = __esm({
 });
 
 // ../pubm-issue-34-release-workflow/packages/core/src/ecosystem/catalog.ts
+var catalog_exports = {};
+__export(catalog_exports, {
+  EcosystemCatalog: () => EcosystemCatalog,
+  ecosystemCatalog: () => ecosystemCatalog
+});
 var EcosystemCatalog, ecosystemCatalog;
 var init_catalog2 = __esm({
   "../pubm-issue-34-release-workflow/packages/core/src/ecosystem/catalog.ts"() {
@@ -33258,14 +33263,14 @@ var init_catalog2 = __esm({
       label: "Rust",
       defaultRegistries: ["crates"],
       ecosystemClass: RustEcosystem,
-      detect: (path11) => RustEcosystem.detect(path11)
+      detect: (path15) => RustEcosystem.detect(path15)
     });
     ecosystemCatalog.register({
       key: "js",
       label: "JavaScript",
       defaultRegistries: ["npm", "jsr"],
       ecosystemClass: JsEcosystem,
-      detect: (path11) => JsEcosystem.detect(path11)
+      detect: (path15) => JsEcosystem.detect(path15)
     });
   }
 });
@@ -34365,7 +34370,7 @@ var require_braces = __commonJS({
 var require_constants8 = __commonJS({
   "../pubm-issue-34-release-workflow/node_modules/.bun/picomatch@2.3.1/node_modules/picomatch/lib/constants.js"(exports, module) {
     "use strict";
-    var path11 = __require("path");
+    var path15 = __require("path");
     var WIN_SLASH = "\\\\/";
     var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
     var DOT_LITERAL = "\\.";
@@ -34535,7 +34540,7 @@ var require_constants8 = __commonJS({
       /* | */
       CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
       /* \uFEFF */
-      SEP: path11.sep,
+      SEP: path15.sep,
       /**
        * Create EXTGLOB_CHARS
        */
@@ -34562,7 +34567,7 @@ var require_constants8 = __commonJS({
 var require_utils3 = __commonJS({
   "../pubm-issue-34-release-workflow/node_modules/.bun/picomatch@2.3.1/node_modules/picomatch/lib/utils.js"(exports) {
     "use strict";
-    var path11 = __require("path");
+    var path15 = __require("path");
     var win32 = process.platform === "win32";
     var {
       REGEX_BACKSLASH,
@@ -34591,7 +34596,7 @@ var require_utils3 = __commonJS({
       if (options && typeof options.windows === "boolean") {
         return options.windows;
       }
-      return win32 === true || path11.sep === "\\";
+      return win32 === true || path15.sep === "\\";
     };
     exports.escapeLast = (input, char, lastIdx) => {
       const idx = input.lastIndexOf(char, lastIdx);
@@ -35726,7 +35731,7 @@ var require_parse4 = __commonJS({
 var require_picomatch = __commonJS({
   "../pubm-issue-34-release-workflow/node_modules/.bun/picomatch@2.3.1/node_modules/picomatch/lib/picomatch.js"(exports, module) {
     "use strict";
-    var path11 = __require("path");
+    var path15 = __require("path");
     var scan = require_scan();
     var parse7 = require_parse4();
     var utils = require_utils3();
@@ -35811,7 +35816,7 @@ var require_picomatch = __commonJS({
     };
     picomatch.matchBase = (input, glob, options, posix = utils.isWindows(options)) => {
       const regex = glob instanceof RegExp ? glob : picomatch.makeRe(glob, options);
-      return regex.test(path11.basename(input));
+      return regex.test(path15.basename(input));
     };
     picomatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
     picomatch.parse = (pattern, options) => {
@@ -36109,17 +36114,17 @@ var require_visit = __commonJS({
     visit2.BREAK = BREAK;
     visit2.SKIP = SKIP;
     visit2.REMOVE = REMOVE;
-    function visit_(key, node, visitor, path11) {
-      const ctrl = callVisitor(key, node, visitor, path11);
+    function visit_(key, node, visitor, path15) {
+      const ctrl = callVisitor(key, node, visitor, path15);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path11, ctrl);
-        return visit_(key, ctrl, visitor, path11);
+        replaceNode(key, path15, ctrl);
+        return visit_(key, ctrl, visitor, path15);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path11 = Object.freeze(path11.concat(node));
+          path15 = Object.freeze(path15.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = visit_(i, node.items[i], visitor, path11);
+            const ci = visit_(i, node.items[i], visitor, path15);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -36130,13 +36135,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path11 = Object.freeze(path11.concat(node));
-          const ck = visit_("key", node.key, visitor, path11);
+          path15 = Object.freeze(path15.concat(node));
+          const ck = visit_("key", node.key, visitor, path15);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = visit_("value", node.value, visitor, path11);
+          const cv = visit_("value", node.value, visitor, path15);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -36157,17 +36162,17 @@ var require_visit = __commonJS({
     visitAsync.BREAK = BREAK;
     visitAsync.SKIP = SKIP;
     visitAsync.REMOVE = REMOVE;
-    async function visitAsync_(key, node, visitor, path11) {
-      const ctrl = await callVisitor(key, node, visitor, path11);
+    async function visitAsync_(key, node, visitor, path15) {
+      const ctrl = await callVisitor(key, node, visitor, path15);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path11, ctrl);
-        return visitAsync_(key, ctrl, visitor, path11);
+        replaceNode(key, path15, ctrl);
+        return visitAsync_(key, ctrl, visitor, path15);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path11 = Object.freeze(path11.concat(node));
+          path15 = Object.freeze(path15.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = await visitAsync_(i, node.items[i], visitor, path11);
+            const ci = await visitAsync_(i, node.items[i], visitor, path15);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -36178,13 +36183,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path11 = Object.freeze(path11.concat(node));
-          const ck = await visitAsync_("key", node.key, visitor, path11);
+          path15 = Object.freeze(path15.concat(node));
+          const ck = await visitAsync_("key", node.key, visitor, path15);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = await visitAsync_("value", node.value, visitor, path11);
+          const cv = await visitAsync_("value", node.value, visitor, path15);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -36211,23 +36216,23 @@ var require_visit = __commonJS({
       }
       return visitor;
     }
-    function callVisitor(key, node, visitor, path11) {
+    function callVisitor(key, node, visitor, path15) {
       if (typeof visitor === "function")
-        return visitor(key, node, path11);
+        return visitor(key, node, path15);
       if (identity.isMap(node))
-        return visitor.Map?.(key, node, path11);
+        return visitor.Map?.(key, node, path15);
       if (identity.isSeq(node))
-        return visitor.Seq?.(key, node, path11);
+        return visitor.Seq?.(key, node, path15);
       if (identity.isPair(node))
-        return visitor.Pair?.(key, node, path11);
+        return visitor.Pair?.(key, node, path15);
       if (identity.isScalar(node))
-        return visitor.Scalar?.(key, node, path11);
+        return visitor.Scalar?.(key, node, path15);
       if (identity.isAlias(node))
-        return visitor.Alias?.(key, node, path11);
+        return visitor.Alias?.(key, node, path15);
       return void 0;
     }
-    function replaceNode(key, path11, node) {
-      const parent = path11[path11.length - 1];
+    function replaceNode(key, path15, node) {
+      const parent = path15[path15.length - 1];
       if (identity.isCollection(parent)) {
         parent.items[key] = node;
       } else if (identity.isPair(parent)) {
@@ -36835,10 +36840,10 @@ var require_Collection = __commonJS({
     var createNode = require_createNode();
     var identity = require_identity();
     var Node = require_Node();
-    function collectionFromPath(schema, path11, value) {
+    function collectionFromPath(schema, path15, value) {
       let v = value;
-      for (let i = path11.length - 1; i >= 0; --i) {
-        const k2 = path11[i];
+      for (let i = path15.length - 1; i >= 0; --i) {
+        const k2 = path15[i];
         if (typeof k2 === "number" && Number.isInteger(k2) && k2 >= 0) {
           const a2 = [];
           a2[k2] = v;
@@ -36857,7 +36862,7 @@ var require_Collection = __commonJS({
         sourceObjects: /* @__PURE__ */ new Map()
       });
     }
-    var isEmptyPath = (path11) => path11 == null || typeof path11 === "object" && !!path11[Symbol.iterator]().next().done;
+    var isEmptyPath = (path15) => path15 == null || typeof path15 === "object" && !!path15[Symbol.iterator]().next().done;
     var Collection2 = class extends Node.NodeBase {
       constructor(type, schema) {
         super(type);
@@ -36887,11 +36892,11 @@ var require_Collection = __commonJS({
        * be a Pair instance or a `{ key, value }` object, which may not have a key
        * that already exists in the map.
        */
-      addIn(path11, value) {
-        if (isEmptyPath(path11))
+      addIn(path15, value) {
+        if (isEmptyPath(path15))
           this.add(value);
         else {
-          const [key, ...rest] = path11;
+          const [key, ...rest] = path15;
           const node = this.get(key, true);
           if (identity.isCollection(node))
             node.addIn(rest, value);
@@ -36905,8 +36910,8 @@ var require_Collection = __commonJS({
        * Removes a value from the collection.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path11) {
-        const [key, ...rest] = path11;
+      deleteIn(path15) {
+        const [key, ...rest] = path15;
         if (rest.length === 0)
           return this.delete(key);
         const node = this.get(key, true);
@@ -36920,8 +36925,8 @@ var require_Collection = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path11, keepScalar) {
-        const [key, ...rest] = path11;
+      getIn(path15, keepScalar) {
+        const [key, ...rest] = path15;
         const node = this.get(key, true);
         if (rest.length === 0)
           return !keepScalar && identity.isScalar(node) ? node.value : node;
@@ -36939,8 +36944,8 @@ var require_Collection = __commonJS({
       /**
        * Checks if the collection includes a value with the key `key`.
        */
-      hasIn(path11) {
-        const [key, ...rest] = path11;
+      hasIn(path15) {
+        const [key, ...rest] = path15;
         if (rest.length === 0)
           return this.has(key);
         const node = this.get(key, true);
@@ -36950,8 +36955,8 @@ var require_Collection = __commonJS({
        * Sets a value in this collection. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path11, value) {
-        const [key, ...rest] = path11;
+      setIn(path15, value) {
+        const [key, ...rest] = path15;
         if (rest.length === 0) {
           this.set(key, value);
         } else {
@@ -39455,9 +39460,9 @@ var require_Document = __commonJS({
           this.contents.add(value);
       }
       /** Adds a value to the document. */
-      addIn(path11, value) {
+      addIn(path15, value) {
         if (assertCollection(this.contents))
-          this.contents.addIn(path11, value);
+          this.contents.addIn(path15, value);
       }
       /**
        * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
@@ -39532,14 +39537,14 @@ var require_Document = __commonJS({
        * Removes a value from the document.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path11) {
-        if (Collection2.isEmptyPath(path11)) {
+      deleteIn(path15) {
+        if (Collection2.isEmptyPath(path15)) {
           if (this.contents == null)
             return false;
           this.contents = null;
           return true;
         }
-        return assertCollection(this.contents) ? this.contents.deleteIn(path11) : false;
+        return assertCollection(this.contents) ? this.contents.deleteIn(path15) : false;
       }
       /**
        * Returns item at `key`, or `undefined` if not found. By default unwraps
@@ -39554,10 +39559,10 @@ var require_Document = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path11, keepScalar) {
-        if (Collection2.isEmptyPath(path11))
+      getIn(path15, keepScalar) {
+        if (Collection2.isEmptyPath(path15))
           return !keepScalar && identity.isScalar(this.contents) ? this.contents.value : this.contents;
-        return identity.isCollection(this.contents) ? this.contents.getIn(path11, keepScalar) : void 0;
+        return identity.isCollection(this.contents) ? this.contents.getIn(path15, keepScalar) : void 0;
       }
       /**
        * Checks if the document includes a value with the key `key`.
@@ -39568,10 +39573,10 @@ var require_Document = __commonJS({
       /**
        * Checks if the document includes a value at `path`.
        */
-      hasIn(path11) {
-        if (Collection2.isEmptyPath(path11))
+      hasIn(path15) {
+        if (Collection2.isEmptyPath(path15))
           return this.contents !== void 0;
-        return identity.isCollection(this.contents) ? this.contents.hasIn(path11) : false;
+        return identity.isCollection(this.contents) ? this.contents.hasIn(path15) : false;
       }
       /**
        * Sets a value in this document. For `!!set`, `value` needs to be a
@@ -39588,13 +39593,13 @@ var require_Document = __commonJS({
        * Sets a value in this document. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path11, value) {
-        if (Collection2.isEmptyPath(path11)) {
+      setIn(path15, value) {
+        if (Collection2.isEmptyPath(path15)) {
           this.contents = value;
         } else if (this.contents == null) {
-          this.contents = Collection2.collectionFromPath(this.schema, Array.from(path11), value);
+          this.contents = Collection2.collectionFromPath(this.schema, Array.from(path15), value);
         } else if (assertCollection(this.contents)) {
-          this.contents.setIn(path11, value);
+          this.contents.setIn(path15, value);
         }
       }
       /**
@@ -41546,9 +41551,9 @@ var require_cst_visit = __commonJS({
     visit2.BREAK = BREAK;
     visit2.SKIP = SKIP;
     visit2.REMOVE = REMOVE;
-    visit2.itemAtPath = (cst, path11) => {
+    visit2.itemAtPath = (cst, path15) => {
       let item = cst;
-      for (const [field, index] of path11) {
+      for (const [field, index] of path15) {
         const tok = item?.[field];
         if (tok && "items" in tok) {
           item = tok.items[index];
@@ -41557,23 +41562,23 @@ var require_cst_visit = __commonJS({
       }
       return item;
     };
-    visit2.parentCollection = (cst, path11) => {
-      const parent = visit2.itemAtPath(cst, path11.slice(0, -1));
-      const field = path11[path11.length - 1][0];
+    visit2.parentCollection = (cst, path15) => {
+      const parent = visit2.itemAtPath(cst, path15.slice(0, -1));
+      const field = path15[path15.length - 1][0];
       const coll = parent?.[field];
       if (coll && "items" in coll)
         return coll;
       throw new Error("Parent collection not found");
     };
-    function _visit(path11, item, visitor) {
-      let ctrl = visitor(item, path11);
+    function _visit(path15, item, visitor) {
+      let ctrl = visitor(item, path15);
       if (typeof ctrl === "symbol")
         return ctrl;
       for (const field of ["key", "value"]) {
         const token = item[field];
         if (token && "items" in token) {
           for (let i = 0; i < token.items.length; ++i) {
-            const ci = _visit(Object.freeze(path11.concat([[field, i]])), token.items[i], visitor);
+            const ci = _visit(Object.freeze(path15.concat([[field, i]])), token.items[i], visitor);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -41584,10 +41589,10 @@ var require_cst_visit = __commonJS({
             }
           }
           if (typeof ctrl === "function" && field === "key")
-            ctrl = ctrl(item, path11);
+            ctrl = ctrl(item, path15);
         }
       }
-      return typeof ctrl === "function" ? ctrl(item, path11) : ctrl;
+      return typeof ctrl === "function" ? ctrl(item, path15) : ctrl;
     }
     exports.visit = visit2;
   }
@@ -43831,8 +43836,8 @@ var Context = class {
       if (existsSync2(process.env.GITHUB_EVENT_PATH)) {
         this.payload = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, { encoding: "utf8" }));
       } else {
-        const path11 = process.env.GITHUB_EVENT_PATH;
-        process.stdout.write(`GITHUB_EVENT_PATH ${path11} does not exist${EOL5}`);
+        const path15 = process.env.GITHUB_EVENT_PATH;
+        process.stdout.write(`GITHUB_EVENT_PATH ${path15} does not exist${EOL5}`);
       }
     }
     this.eventName = process.env.GITHUB_EVENT_NAME;
@@ -47545,110 +47550,6 @@ function getOctokit(token, options, ...additionalPlugins) {
   return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 
-// src/templates.ts
-var MARKER = "<!-- pubm:changeset-check -->";
-var FOOTER = '<sub>Validated by <a href="https://github.com/syi0808/pubm-actions">pubm changeset check</a></sub>';
-function successBody(changesets) {
-  const rows = changesets.flatMap(
-    (cs) => cs.releases.map(
-      (r) => `| \`${cs.id}.md\` | \`${r.path}\` | ${r.type} |`
-    )
-  );
-  return `${MARKER}
-### \u2705 Changeset detected
-
-| File | Package | Bump |
-|------|---------|------|
-${rows.join("\n")}
-
-${FOOTER}`;
-}
-function missingBody(skipLabel) {
-  return `${MARKER}
-### \u274C No changeset found
-
-This PR doesn't include a changeset. If the change affects users, add one by running:
-
-\`\`\`sh
-pubm changesets add
-\`\`\`
-
-This creates a file in \`.pubm/changesets/\` that describes the change and its semver bump.
-
-If this PR doesn't need a changeset (docs, CI, refactoring, etc.), add the **\`${skipLabel}\`** label to skip this check.
-
-${FOOTER}`;
-}
-function invalidBody(errors) {
-  const rows = errors.map(
-    (e2) => `| \`${e2.file}\` | ${e2.message} |`
-  );
-  return `${MARKER}
-### \u274C Invalid changeset(s)
-
-These changeset files have validation errors:
-
-| File | Error |
-|------|-------|
-${rows.join("\n")}
-
-Fix these and push again.
-
-${FOOTER}`;
-}
-function skippedBody(label) {
-  return `${MARKER}
-### \u26A0\uFE0F Changeset check skipped
-
-The **\`${label}\`** label is on this PR, so no changeset is needed.
-
-${FOOTER}`;
-}
-
-// src/comment.ts
-async function upsertComment(octokit, ctx, body, marker = MARKER) {
-  const { data: comments } = await octokit.rest.issues.listComments({
-    owner: ctx.owner,
-    repo: ctx.repo,
-    issue_number: ctx.issueNumber
-  });
-  const existing = comments.find((c) => c.body?.includes(marker));
-  if (existing) {
-    await octokit.rest.issues.updateComment({
-      owner: ctx.owner,
-      repo: ctx.repo,
-      comment_id: existing.id,
-      body
-    });
-  } else {
-    await octokit.rest.issues.createComment({
-      owner: ctx.owner,
-      repo: ctx.repo,
-      issue_number: ctx.issueNumber,
-      body
-    });
-  }
-}
-
-// src/detect.ts
-import { execSync } from "node:child_process";
-import path from "node:path";
-function detectChangesetFiles(baseBranch, cwd) {
-  try {
-    const output = execSync(
-      `git diff --name-only --diff-filter=ACMR "origin/${baseBranch}...HEAD" -- ".pubm/changesets/*.md"`,
-      { cwd, encoding: "utf8" }
-    );
-    return output.trim().split("\n").filter((f) => f.length > 0).filter((f) => path.basename(f) !== "README.md");
-  } catch {
-    return [];
-  }
-}
-
-// src/validate.ts
-import { existsSync as existsSync7, readFileSync as readFileSync7 } from "node:fs";
-import path10 from "node:path";
-
 // ../pubm-issue-34-release-workflow/packages/core/src/index.ts
 init_runner();
 
@@ -47671,12 +47572,247 @@ init_i18n();
 // ../pubm-issue-34-release-workflow/packages/core/src/monorepo/discover.ts
 var import_micromatch = __toESM(require_micromatch(), 1);
 init_catalog2();
+import { lstatSync, readdirSync } from "node:fs";
+import path6 from "node:path";
+
+// ../pubm-issue-34-release-workflow/packages/core/src/ecosystem/infer.ts
+async function inferRegistries(packagePath, ecosystemKey, rootPath) {
+  const { ecosystemCatalog: ecosystemCatalog2 } = await Promise.resolve().then(() => (init_catalog2(), catalog_exports));
+  const descriptor = ecosystemCatalog2.get(ecosystemKey);
+  if (!descriptor) return [];
+  const ecosystem = new descriptor.ecosystemClass(packagePath);
+  const registries = [];
+  for (const RegistryClass of ecosystem.registryClasses()) {
+    const result = await RegistryClass.canInfer(packagePath, rootPath);
+    if (result) registries.push(result);
+  }
+  return registries;
+}
+
+// ../pubm-issue-34-release-workflow/packages/core/src/monorepo/discover.ts
 init_catalog();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/monorepo/workspace.ts
 init_main();
 init_dist2();
 var import_yaml = __toESM(require_dist(), 1);
+import { existsSync as existsSync4, readFileSync as readFileSync4 } from "node:fs";
+import { join as join4 } from "node:path";
+function detectWorkspace(cwd) {
+  const root = cwd ?? process.cwd();
+  const workspaces = [];
+  const pnpmWorkspacePath = join4(root, "pnpm-workspace.yaml");
+  if (existsSync4(pnpmWorkspacePath)) {
+    const content = readFileSync4(pnpmWorkspacePath, "utf-8");
+    const parsed = (0, import_yaml.parse)(content);
+    const packages = parsed?.packages ?? [];
+    workspaces.push({ type: "pnpm", patterns: packages });
+  }
+  const cargoTomlPath = join4(root, "Cargo.toml");
+  if (existsSync4(cargoTomlPath)) {
+    const content = readFileSync4(cargoTomlPath, "utf-8");
+    try {
+      const parsed = parse5(content);
+      const workspace = parsed.workspace;
+      if (workspace?.members && Array.isArray(workspace.members)) {
+        workspaces.push({
+          type: "cargo",
+          patterns: workspace.members,
+          ...workspace.exclude?.length ? { exclude: workspace.exclude } : {}
+        });
+      }
+    } catch {
+    }
+  }
+  for (const denoFile of ["deno.json", "deno.jsonc"]) {
+    const denoPath = join4(root, denoFile);
+    if (existsSync4(denoPath)) {
+      const content = readFileSync4(denoPath, "utf-8");
+      try {
+        const parsed = denoFile.endsWith(".jsonc") ? parse3(content) : JSON.parse(content);
+        if (Array.isArray(parsed?.workspace)) {
+          const patterns = parsed.workspace.map(
+            (p2) => p2.startsWith("./") ? p2.slice(2) : p2
+          );
+          workspaces.push({ type: "deno", patterns });
+        }
+      } catch {
+      }
+      break;
+    }
+  }
+  if (!workspaces.some((w3) => w3.type === "pnpm")) {
+    const packageJsonPath = join4(root, "package.json");
+    if (existsSync4(packageJsonPath)) {
+      const content = readFileSync4(packageJsonPath, "utf-8");
+      const pkg = JSON.parse(content);
+      if (pkg.workspaces) {
+        const bunfigPath = join4(root, "bunfig.toml");
+        const isBun2 = existsSync4(bunfigPath);
+        if (Array.isArray(pkg.workspaces)) {
+          workspaces.push({
+            type: isBun2 ? "bun" : "npm",
+            patterns: pkg.workspaces
+          });
+        } else if (typeof pkg.workspaces === "object" && Array.isArray(pkg.workspaces.packages)) {
+          workspaces.push({
+            type: isBun2 ? "bun" : "yarn",
+            patterns: pkg.workspaces.packages
+          });
+        }
+      }
+    }
+  }
+  return workspaces;
+}
+
+// ../pubm-issue-34-release-workflow/packages/core/src/monorepo/discover.ts
+function toForwardSlash(p2) {
+  return p2.replace(/\\/g, "/");
+}
+function isGlobPattern(pattern) {
+  return import_micromatch.default.scan(pattern).isGlob;
+}
+function matchesIgnore(pkgPath, ignorePatterns) {
+  const normalized = toForwardSlash(pkgPath);
+  return ignorePatterns.some((pattern) => {
+    const regex = new RegExp(
+      `^${toForwardSlash(pattern).replace(/\*/g, ".*").replace(/\?/g, ".")}$`
+    );
+    return regex.test(normalized);
+  });
+}
+function readdirRecursiveNoSymlinks(dir, root) {
+  const results = [];
+  let entries;
+  try {
+    entries = readdirSync(dir, { encoding: "utf-8" });
+  } catch {
+    return results;
+  }
+  for (const entry of entries) {
+    if (entry === "node_modules" || entry === ".git") continue;
+    const fullPath = path6.join(dir, entry);
+    try {
+      const stat8 = lstatSync(fullPath);
+      if (stat8.isSymbolicLink()) continue;
+      if (stat8.isDirectory()) {
+        results.push(path6.relative(root, fullPath));
+        results.push(...readdirRecursiveNoSymlinks(fullPath, root));
+      }
+    } catch {
+    }
+  }
+  return results;
+}
+function resolvePatterns(cwd, patterns) {
+  const dirs = readdirRecursiveNoSymlinks(cwd, cwd);
+  const normalizedDirs = dirs.map((d3) => d3.replace(/\\/g, "/"));
+  const matched = (0, import_micromatch.default)(normalizedDirs, patterns);
+  return matched.map((d3) => path6.resolve(cwd, d3));
+}
+async function discoverFromWorkspace(cwd, ignore) {
+  const workspaces = detectWorkspace(cwd);
+  const targets = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const workspace of workspaces) {
+    if (workspace.patterns.length === 0) continue;
+    const dirs = resolvePatterns(cwd, workspace.patterns);
+    const excludedDirs = workspace.exclude?.length ? new Set(
+      resolvePatterns(cwd, workspace.exclude).map(
+        (d3) => toForwardSlash(path6.relative(cwd, d3))
+      )
+    ) : /* @__PURE__ */ new Set();
+    for (const dir of dirs) {
+      const normalizedRelative = toForwardSlash(path6.relative(cwd, dir));
+      if (excludedDirs.has(normalizedRelative)) continue;
+      if (matchesIgnore(normalizedRelative, ignore)) continue;
+      if (seen.has(normalizedRelative)) continue;
+      seen.add(normalizedRelative);
+      targets.push({ path: normalizedRelative });
+    }
+  }
+  return targets;
+}
+async function resolvePackages(cwd, target) {
+  const absPath = path6.resolve(cwd, target.path);
+  let descriptors = [];
+  if (target.ecosystem) {
+    const desc = ecosystemCatalog.get(target.ecosystem);
+    if (desc) descriptors = [desc];
+  } else if (target.registries && target.registries.length > 0) {
+    const detected = await ecosystemCatalog.detectAll(absPath);
+    const registryEcosystems = new Set(
+      target.registries.map((r) => registryCatalog.get(r)?.ecosystem).filter((e2) => e2 !== void 0)
+    );
+    descriptors = detected.filter((d3) => registryEcosystems.has(d3.key));
+  } else {
+    descriptors = await ecosystemCatalog.detectAll(absPath);
+  }
+  const results = [];
+  for (const descriptor of descriptors) {
+    const ecosystemKey = descriptor.key;
+    const ecosystem = new descriptor.ecosystemClass(absPath);
+    let manifest;
+    try {
+      manifest = await ecosystem.readManifest();
+    } catch {
+      continue;
+    }
+    if (manifest.private) continue;
+    const registryVersions = await ecosystem.readRegistryVersions();
+    const versionValues = [...registryVersions.values()];
+    const hasVersionMismatch = versionValues.length > 1 && !versionValues.every((v) => v === versionValues[0]);
+    const registries = target.registries ? target.registries.filter(
+      (r) => registryCatalog.get(r)?.ecosystem === ecosystemKey
+    ) : await inferRegistries(absPath, ecosystemKey, cwd);
+    results.push({
+      name: manifest.name,
+      version: manifest.version,
+      path: target.path,
+      ecosystem: ecosystemKey,
+      registries,
+      dependencies: manifest.dependencies,
+      ...hasVersionMismatch ? { registryVersions } : {}
+    });
+  }
+  return results;
+}
+async function discoverPackages(options) {
+  const { cwd, ignore = [], configPackages = [] } = options;
+  if (configPackages.length > 0) {
+    const targets2 = configPackages.flatMap((pkg) => {
+      if (isGlobPattern(pkg.path)) {
+        const resolved = resolvePatterns(cwd, [pkg.path]);
+        return resolved.map((absPath) => ({
+          path: toForwardSlash(path6.relative(cwd, absPath)),
+          ecosystem: pkg.ecosystem,
+          registries: pkg.registries
+        }));
+      }
+      return {
+        path: toForwardSlash(path6.normalize(pkg.path)),
+        ecosystem: pkg.ecosystem,
+        registries: pkg.registries
+      };
+    });
+    const results2 = await Promise.all(
+      targets2.map((target) => resolvePackages(cwd, target))
+    );
+    return results2.flat();
+  }
+  const targets = await discoverFromWorkspace(cwd, ignore);
+  if (targets.length === 0) {
+    const workspaces = detectWorkspace(cwd);
+    if (workspaces.length === 0) {
+      return await resolvePackages(cwd, { path: "." });
+    }
+  }
+  const results = await Promise.all(
+    targets.map((target) => resolvePackages(cwd, target))
+  );
+  return results.flat();
+}
 
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-phases/dry-run.ts
 init_catalog();
@@ -47863,6 +47999,42 @@ function parseChangeset(content, fileName, resolveKey) {
 
 // ../pubm-issue-34-release-workflow/packages/core/src/changeset/resolve.ts
 init_package_key();
+function createKeyResolver(packages) {
+  const validKeys = new Set(packages.map((p2) => packageKey(p2)));
+  const pathEcosystems = /* @__PURE__ */ new Map();
+  const nameEcosystems = /* @__PURE__ */ new Map();
+  for (const p2 of packages) {
+    const existingPath = pathEcosystems.get(p2.path) ?? [];
+    if (!existingPath.includes(p2.ecosystem)) existingPath.push(p2.ecosystem);
+    pathEcosystems.set(p2.path, existingPath);
+    const existingName = nameEcosystems.get(p2.name) ?? [];
+    if (!existingName.includes(p2.ecosystem)) existingName.push(p2.ecosystem);
+    nameEcosystems.set(p2.name, existingName);
+  }
+  return (key) => {
+    if (validKeys.has(key)) return key;
+    const ecosystems = pathEcosystems.get(key);
+    if (ecosystems) {
+      if (ecosystems.length === 1) {
+        return `${key}::${ecosystems[0]}`;
+      }
+      throw new Error(
+        `Ambiguous changeset key "${key}": directory contains multiple ecosystems (${ecosystems.join(", ")}). Use "${key}::${ecosystems[0]}" or "${key}::${ecosystems[1]}" to specify.`
+      );
+    }
+    const nameEcos = nameEcosystems.get(key);
+    if (nameEcos) {
+      if (nameEcos.length === 1) {
+        const pkg = packages.find((p2) => p2.name === key);
+        if (pkg) return packageKey(pkg);
+      }
+      throw new Error(
+        `Ambiguous changeset key "${key}": name is shared across ecosystems (${nameEcos.join(", ")}). Use the path::ecosystem format to specify.`
+      );
+    }
+    return key;
+  };
+}
 
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-phases/materialize.ts
 init_git();
@@ -47894,9 +48066,241 @@ init_package_key();
 var import_micromatch4 = __toESM(require_micromatch(), 1);
 init_catalog2();
 init_i18n();
+import path7 from "node:path";
 init_catalog();
+var defaultValidate = {
+  cleanInstall: true,
+  entryPoints: true,
+  extraneousFiles: true
+};
+var defaultRollback = {
+  strategy: "individual",
+  dangerouslyAllowUnpublish: false
+};
+var defaultRelease = {
+  versioning: {
+    mode: "independent",
+    fixed: [],
+    linked: [],
+    updateInternalDependencies: "patch"
+  },
+  changesets: {
+    directory: ".pubm/changesets"
+  },
+  commits: {
+    format: "conventional",
+    types: {}
+  },
+  changelog: true
+};
+var defaultReleasePullRequest = {
+  branchTemplate: "pubm/release/{scopeSlug}",
+  titleTemplate: "chore(release): {scope} {version}",
+  label: "pubm:release-pr",
+  bumpLabels: {
+    patch: "release:patch",
+    minor: "release:minor",
+    major: "release:major",
+    prerelease: "release:prerelease"
+  },
+  unversionedChanges: "warn"
+};
+var defaultConfig = {
+  branch: "main",
+  commit: false,
+  access: "public",
+  ignore: [],
+  snapshotTemplate: "{tag}-{timestamp}",
+  tag: "latest",
+  contents: ".",
+  saveToken: true,
+  releaseDraft: true,
+  releaseNotes: true,
+  lockfileSync: "optional",
+  release: defaultRelease,
+  registryQualifiedTags: false
+};
+async function resolveConfig(config, cwd) {
+  const resolvedCwd = cwd ?? process.cwd();
+  let discoveryEmpty;
+  if (config.packages) {
+    for (const pkg of config.packages) {
+      if (pkg.ecosystem && !ecosystemCatalog.get(pkg.ecosystem)) {
+        throw new Error(
+          t("error.config.unknownEcosystem", {
+            ecosystem: pkg.ecosystem,
+            list: ecosystemCatalog.all().map((d3) => d3.key).join(", ")
+          })
+        );
+      }
+    }
+  }
+  if (config.ecosystems) {
+    for (const key of Object.keys(config.ecosystems)) {
+      if (!ecosystemCatalog.get(key)) {
+        throw new Error(
+          t("error.config.unknownEcosystem", {
+            ecosystem: key,
+            list: ecosystemCatalog.all().map((d3) => d3.key).join(", ")
+          })
+        );
+      }
+    }
+  }
+  const configPackages = config.packages?.map((pkg) => {
+    if (!pkg.registries) return pkg;
+    const normalizedRegistries = pkg.registries.map((entry) => {
+      if (typeof entry === "string") return entry;
+      const ecosystemKey = resolveEcosystemKey(pkg, entry);
+      return registerPrivateRegistry(entry, ecosystemKey);
+    });
+    return { ...pkg, registries: normalizedRegistries };
+  });
+  const discovered = await discoverPackages({
+    cwd: resolvedCwd,
+    configPackages,
+    ignore: config.ignore
+  });
+  let packages;
+  if (discovered.length === 0 && !config.packages) {
+    discoveryEmpty = true;
+    packages = [];
+  } else {
+    packages = discovered.map((pkg) => {
+      const configPkg = configPackages?.find((cp) => {
+        const normalized = cp.path.replace(/\\/g, "/");
+        const pkgPathForward = pkg.path.replace(/\\/g, "/");
+        if (import_micromatch4.default.scan(normalized).isGlob) {
+          return import_micromatch4.default.isMatch(pkgPathForward, normalized);
+        }
+        return path7.normalize(cp.path) === pkg.path;
+      });
+      return {
+        path: pkg.path,
+        name: pkg.name,
+        version: pkg.version,
+        dependencies: pkg.dependencies,
+        ecosystem: pkg.ecosystem,
+        registries: pkg.registries,
+        ...pkg.registryVersions ? { registryVersions: pkg.registryVersions } : {},
+        ...configPkg?.testScript ? { testScript: configPkg.testScript } : {},
+        ...configPkg?.testCommand ? { testCommand: configPkg.testCommand } : {},
+        ...configPkg?.buildScript ? { buildScript: configPkg.buildScript } : {},
+        ...configPkg?.buildCommand ? { buildCommand: configPkg.buildCommand } : {}
+      };
+    });
+  }
+  const release = resolveReleaseConfig(config.release);
+  const configWithoutLegacyReleaseKeys = {
+    ...config
+  };
+  delete configWithoutLegacyReleaseKeys.versionSources;
+  delete configWithoutLegacyReleaseKeys.conventionalCommits;
+  delete configWithoutLegacyReleaseKeys.releasePr;
+  delete configWithoutLegacyReleaseKeys.changelogFormat;
+  return {
+    ...defaultConfig,
+    ...configWithoutLegacyReleaseKeys,
+    packages,
+    validate: { ...defaultValidate, ...config.validate },
+    rollback: {
+      ...defaultRollback,
+      ...config.rollbackStrategy ? { strategy: config.rollbackStrategy } : {},
+      ...config.rollback
+    },
+    snapshotTemplate: config.snapshotTemplate ?? defaultConfig.snapshotTemplate,
+    ecosystems: config.ecosystems ?? {},
+    release,
+    versioning: release.versioning.mode,
+    fixed: release.versioning.fixed,
+    linked: release.versioning.linked,
+    updateInternalDependencies: release.versioning.updateInternalDependencies,
+    changelog: release.changelog,
+    plugins: config.plugins ?? [],
+    ...discoveryEmpty ? { discoveryEmpty } : {}
+  };
+}
+function resolveReleaseConfig(config) {
+  const versioning = {
+    ...defaultRelease.versioning,
+    ...config?.versioning,
+    fixed: config?.versioning?.fixed?.map((group) => [...group]) ?? defaultRelease.versioning.fixed,
+    linked: config?.versioning?.linked?.map((group) => [...group]) ?? defaultRelease.versioning.linked
+  };
+  return {
+    versioning,
+    changesets: {
+      ...defaultRelease.changesets,
+      ...config?.changesets
+    },
+    commits: {
+      ...defaultRelease.commits,
+      ...config?.commits,
+      types: config?.commits?.types ?? defaultRelease.commits.types
+    },
+    changelog: config?.changelog ?? defaultRelease.changelog,
+    pullRequest: resolveReleasePullRequestConfig(config?.pullRequest, {
+      versioning: versioning.mode,
+      fixed: versioning.fixed,
+      linked: versioning.linked
+    })
+  };
+}
+function resolveReleasePullRequestConfig(config, inherited) {
+  const fixed = config?.fixed ?? inherited.fixed;
+  const linked = config?.linked ?? inherited.linked;
+  const grouping = config?.grouping && config.grouping !== "inherit" ? config.grouping : inherited.versioning;
+  return {
+    branchTemplate: config?.branchTemplate ?? defaultReleasePullRequest.branchTemplate,
+    titleTemplate: config?.titleTemplate ?? defaultReleasePullRequest.titleTemplate,
+    label: config?.label ?? defaultReleasePullRequest.label,
+    grouping,
+    bumpLabels: {
+      ...defaultReleasePullRequest.bumpLabels,
+      ...config?.bumpLabels
+    },
+    fixed: fixed.map((group) => [...group]),
+    linked: linked.map((group) => [...group]),
+    unversionedChanges: config?.unversionedChanges ?? defaultReleasePullRequest.unversionedChanges
+  };
+}
+function resolveEcosystemKey(pkg, _entry) {
+  if (pkg.ecosystem) return pkg.ecosystem;
+  const firstStringRegistry = pkg.registries?.find(
+    (r) => typeof r === "string"
+  );
+  if (firstStringRegistry) {
+    const descriptor = registryCatalog.get(firstStringRegistry);
+    if (descriptor) return descriptor.ecosystem;
+  }
+  throw new Error(t("error.config.cannotInferEcosystem"));
+}
 
 // ../pubm-issue-34-release-workflow/packages/core/src/config/loader.ts
+import { execFile } from "node:child_process";
+import {
+  mkdir as mkdir2,
+  mkdtemp,
+  readFile as readFile6,
+  rm as rm2,
+  stat as stat7,
+  writeFile as writeFile4
+} from "node:fs/promises";
+import { createRequire } from "node:module";
+import { tmpdir as tmpdir2 } from "node:os";
+import path8 from "node:path";
+import { pathToFileURL } from "node:url";
+import vm from "node:vm";
+var CONFIG_FILES = [
+  "pubm.config.ts",
+  "pubm.config.mts",
+  "pubm.config.cts",
+  "pubm.config.js",
+  "pubm.config.mjs",
+  "pubm.config.cjs"
+];
+var OPTIONAL_DEPENDENCY_NAMESPACE = "pubm-optional-dependency";
+var CONFIG_MODULE_NAMESPACE = "pubm-config-module-shim";
 var CONFIG_MODULE_SHIMS = {
   "vitest/config": [
     "function isObject(value) {",
@@ -47934,6 +48338,760 @@ var CONFIG_MODULE_SHIMS = {
     "export default defineConfig;"
   ].join("\n")
 };
+async function findConfigFile(cwd) {
+  for (const file of CONFIG_FILES) {
+    const filePath = path8.join(cwd, file);
+    try {
+      if ((await stat7(filePath)).isFile()) {
+        return filePath;
+      }
+    } catch {
+    }
+  }
+  return null;
+}
+function getPackageName2(specifier) {
+  if (specifier.startsWith("@")) {
+    const [scope, name2] = specifier.split("/");
+    return scope && name2 ? `${scope}/${name2}` : specifier;
+  }
+  const [name] = specifier.split("/");
+  return name ?? specifier;
+}
+function isBareSpecifier(specifier) {
+  return !specifier.startsWith(".") && !specifier.startsWith("/") && !specifier.startsWith("file:") && !specifier.startsWith("node:");
+}
+async function findClosestPackageManifest(filePath) {
+  let current = path8.dirname(filePath);
+  while (true) {
+    const manifestPath = path8.join(current, "package.json");
+    try {
+      if ((await stat7(manifestPath)).isFile()) {
+        return manifestPath;
+      }
+    } catch {
+    }
+    const parent = path8.dirname(current);
+    if (parent === current) {
+      return null;
+    }
+    current = parent;
+  }
+}
+async function isOptionalDependencyImport(specifier, importerPath) {
+  if (!isBareSpecifier(specifier)) {
+    return false;
+  }
+  const manifestPath = await findClosestPackageManifest(importerPath);
+  if (!manifestPath) {
+    return false;
+  }
+  const packageName = getPackageName2(specifier);
+  const manifest = JSON.parse(
+    await readFile6(manifestPath, "utf8")
+  );
+  if (manifest.optionalDependencies?.[packageName]) {
+    return true;
+  }
+  return manifest.peerDependenciesMeta?.[packageName]?.optional === true;
+}
+async function findOptionalDynamicImports(logs) {
+  const optionalImports = /* @__PURE__ */ new Set();
+  for (const log of logs) {
+    if (log.importKind !== "dynamic-import" || !log.specifier || !log.position?.file || !log.message.includes("Could not resolve")) {
+      continue;
+    }
+    if (await isOptionalDependencyImport(log.specifier, log.position.file)) {
+      optionalImports.add(log.specifier);
+    }
+  }
+  return [...optionalImports];
+}
+function createMissingOptionalDependencyModule(specifier) {
+  return `throw new Error(${JSON.stringify(
+    `Missing optional dependency "${specifier}" while evaluating pubm config. Install it in the project that requires it or avoid executing that code path during config loading.`
+  )});`;
+}
+function createEntryPointOutput(contents) {
+  return {
+    kind: "entry-point",
+    text: async () => contents
+  };
+}
+function createOptionalDependencyProxyPackage(specifier) {
+  return [
+    `const message = ${JSON.stringify(
+      `Missing optional dependency "${specifier}" while evaluating pubm config. Install it in the project that requires it or avoid executing that code path during config loading.`
+    )};`,
+    "const createProxy = (path = []) => new Proxy(function missingOptionalDependency() {}, {",
+    "  get(_target, prop) {",
+    '    if (prop === "__esModule") return true;',
+    '    if (prop === "default") return createProxy(path);',
+    '    if (prop === "then") return undefined;',
+    "    return createProxy([...path, String(prop)]);",
+    "  },",
+    "  apply() {",
+    '    const suffix = path.length > 0 ? " (" + path.join(".") + ")" : "";',
+    "    throw new Error(message + suffix);",
+    "  },",
+    "  construct() {",
+    '    const suffix = path.length > 0 ? " (" + path.join(".") + ")" : "";',
+    "    throw new Error(message + suffix);",
+    "  },",
+    "});",
+    "const stub = createProxy();",
+    "module.exports = stub;",
+    "module.exports.default = stub;",
+    "module.exports.__esModule = true;"
+  ].join("\n");
+}
+function serializeBuildLog(log) {
+  return {
+    message: log.message,
+    importKind: log.importKind,
+    specifier: log.specifier,
+    position: log.position?.file ? { file: log.position.file } : void 0
+  };
+}
+async function collectOptionalDependenciesForInputs(inputPaths) {
+  const manifestPaths = /* @__PURE__ */ new Set();
+  for (const inputPath of inputPaths) {
+    const manifestPath = await findClosestPackageManifest(inputPath);
+    if (manifestPath) {
+      manifestPaths.add(manifestPath);
+    }
+  }
+  const optionalDependencies = /* @__PURE__ */ new Set();
+  for (const manifestPath of manifestPaths) {
+    const manifest = JSON.parse(
+      await readFile6(manifestPath, "utf8")
+    );
+    for (const dependency of Object.keys(manifest.optionalDependencies ?? {})) {
+      optionalDependencies.add(dependency);
+    }
+    for (const [dependency, meta] of Object.entries(
+      manifest.peerDependenciesMeta ?? {}
+    )) {
+      if (meta.optional) {
+        optionalDependencies.add(dependency);
+      }
+    }
+  }
+  return [...optionalDependencies];
+}
+async function findInstalledPackagePath(startDir, dependency) {
+  let current = startDir;
+  while (true) {
+    const packageDir = path8.join(current, "node_modules", dependency);
+    try {
+      if ((await stat7(packageDir)).isDirectory()) {
+        return packageDir;
+      }
+    } catch {
+    }
+    const parent = path8.dirname(current);
+    if (parent === current) {
+      return null;
+    }
+    current = parent;
+  }
+}
+async function writeOptionalDependencyStubs(moduleDir, resolveFromDir, optionalDependencies) {
+  const nodeModulesDir = path8.join(moduleDir, "node_modules");
+  for (const dependency of optionalDependencies) {
+    if (await findInstalledPackagePath(resolveFromDir, dependency)) {
+      continue;
+    }
+    const packageDir = path8.join(nodeModulesDir, dependency);
+    await mkdir2(packageDir, { recursive: true });
+    await writeFile4(
+      path8.join(packageDir, "package.json"),
+      JSON.stringify(
+        {
+          name: dependency,
+          private: true,
+          main: "./index.js"
+        },
+        null,
+        2
+      ),
+      "utf8"
+    );
+    await writeFile4(
+      path8.join(packageDir, "index.js"),
+      createOptionalDependencyProxyPackage(dependency),
+      "utf8"
+    );
+  }
+}
+function createOptionalDependencyPlugin(specifiers) {
+  const missingSpecifiers = new Set(specifiers);
+  return {
+    name: "pubm-optional-dependency-plugin",
+    target: "bun",
+    setup(builder) {
+      builder.onResolve({ filter: /.*/ }, (args) => {
+        if (!missingSpecifiers.has(args.path)) {
+          return;
+        }
+        return {
+          path: args.path,
+          namespace: OPTIONAL_DEPENDENCY_NAMESPACE
+        };
+      });
+      builder.onLoad(
+        { filter: /.*/, namespace: OPTIONAL_DEPENDENCY_NAMESPACE },
+        (args) => ({
+          contents: createMissingOptionalDependencyModule(args.path),
+          loader: "js"
+        })
+      );
+    }
+  };
+}
+function createConfigModuleShimPlugin() {
+  const shims = new Map(Object.entries(CONFIG_MODULE_SHIMS));
+  return {
+    name: "pubm-config-module-shim-plugin",
+    target: "bun",
+    setup(builder) {
+      builder.onResolve({ filter: /.*/ }, (args) => {
+        if (!shims.has(args.path)) {
+          return;
+        }
+        return {
+          path: args.path,
+          namespace: CONFIG_MODULE_NAMESPACE
+        };
+      });
+      builder.onLoad(
+        { filter: /.*/, namespace: CONFIG_MODULE_NAMESPACE },
+        (args) => {
+          const contents = shims.get(args.path);
+          if (contents === void 0) {
+            throw new Error(
+              `Missing config module shim for "${args.path}" in ${CONFIG_MODULE_NAMESPACE}`
+            );
+          }
+          return {
+            contents,
+            loader: "js"
+          };
+        }
+      );
+    }
+  };
+}
+async function runBunBuild(build, entrypoint, format2 = "esm", optionalDynamicImports = []) {
+  const entrypointSource = await readFile6(entrypoint, "utf8");
+  const result = await build({
+    entrypoints: [entrypoint],
+    target: "bun",
+    format: format2,
+    minify: true,
+    external: [],
+    packages: "bundle",
+    splitting: false,
+    metafile: true,
+    throw: false,
+    files: {
+      [entrypoint]: rewriteImportMeta(entrypointSource, entrypoint)
+    },
+    plugins: [
+      createConfigModuleShimPlugin(),
+      ...optionalDynamicImports.length > 0 ? [createOptionalDependencyPlugin(optionalDynamicImports)] : []
+    ]
+  });
+  return {
+    success: result.success,
+    logs: result.logs.map(serializeBuildLog),
+    optionalDependencies: await collectOptionalDependenciesForInputs(
+      Object.keys(result.metafile?.inputs ?? {})
+    ),
+    outputs: result.outputs
+  };
+}
+async function buildConfig(entrypoint) {
+  const build = globalThis.Bun?.build;
+  if (build) {
+    const initialResult = await runBunBuild(build, entrypoint);
+    if (initialResult.success) {
+      return initialResult;
+    }
+    const optionalDynamicImports = await findOptionalDynamicImports(
+      initialResult.logs
+    );
+    if (optionalDynamicImports.length === 0) {
+      return initialResult;
+    }
+    return runBunBuild(build, entrypoint, "esm", optionalDynamicImports);
+  }
+  return buildConfigWithChildProcess(entrypoint);
+}
+async function buildConfigWithFormat(entrypoint, format2) {
+  const build = globalThis.Bun?.build;
+  if (build) {
+    const initialResult = await runBunBuild(build, entrypoint, format2);
+    if (initialResult.success) {
+      return initialResult;
+    }
+    const optionalDynamicImports = await findOptionalDynamicImports(
+      initialResult.logs
+    );
+    if (optionalDynamicImports.length === 0) {
+      return initialResult;
+    }
+    return runBunBuild(build, entrypoint, format2, optionalDynamicImports);
+  }
+  return buildConfigWithChildProcess(entrypoint, format2);
+}
+async function buildConfigWithChildProcess(entrypoint, format2 = "esm") {
+  const extension = format2 === "esm" ? "mjs" : "cjs";
+  const tempDir = await mkdtemp(path8.join(tmpdir2(), "pubm-config-"));
+  const buildScript = path8.join(tempDir, "build-config.mjs");
+  const outfile = path8.join(tempDir, `pubm.config.${extension}`);
+  const resultFile = path8.join(tempDir, "build-result.json");
+  try {
+    await writeFile4(
+      buildScript,
+      [
+        'import { readFile, stat, writeFile } from "node:fs/promises";',
+        'import path from "node:path";',
+        'import { pathToFileURL } from "node:url";',
+        "",
+        `const OPTIONAL_DEPENDENCY_NAMESPACE = ${JSON.stringify(OPTIONAL_DEPENDENCY_NAMESPACE)};`,
+        `const entrypoint = ${JSON.stringify(entrypoint)};`,
+        `const format = ${JSON.stringify(format2)};`,
+        `const outfile = ${JSON.stringify(outfile)};`,
+        `const resultFile = ${JSON.stringify(resultFile)};`,
+        "",
+        `const CONFIG_MODULE_NAMESPACE = ${JSON.stringify(CONFIG_MODULE_NAMESPACE)};`,
+        `const CONFIG_MODULE_SHIMS = ${JSON.stringify(CONFIG_MODULE_SHIMS)};`,
+        "",
+        "function rewriteImportMeta(source, configPath) {",
+        "  const replacements = [",
+        '    ["import.meta.dirname", JSON.stringify(path.dirname(configPath))],',
+        '    ["import.meta.filename", JSON.stringify(configPath)],',
+        '    ["import.meta.path", JSON.stringify(configPath)],',
+        '    ["import.meta.url", JSON.stringify(pathToFileURL(configPath).href)],',
+        '    ["import.meta.dir", JSON.stringify(path.dirname(configPath))],',
+        "  ];",
+        "",
+        "  let rewritten = source;",
+        "  for (const [pattern, value] of replacements) {",
+        "    rewritten = rewritten.split(pattern).join(value);",
+        "  }",
+        "",
+        "  return rewritten;",
+        "}",
+        "",
+        "function getPackageName(specifier) {",
+        '  if (specifier.startsWith("@")) {',
+        '    const [scope, name] = specifier.split("/");',
+        '    return scope && name ? scope + "/" + name : specifier;',
+        "  }",
+        "",
+        '  const [name] = specifier.split("/");',
+        "  return name ?? specifier;",
+        "}",
+        "",
+        "function isBareSpecifier(specifier) {",
+        '  return !specifier.startsWith(".") &&',
+        '    !specifier.startsWith("/") &&',
+        '    !specifier.startsWith("file:") &&',
+        '    !specifier.startsWith("node:");',
+        "}",
+        "",
+        "async function findClosestPackageManifest(filePath) {",
+        "  let current = path.dirname(filePath);",
+        "",
+        "  while (true) {",
+        '    const manifestPath = path.join(current, "package.json");',
+        "    try {",
+        "      if ((await stat(manifestPath)).isFile()) {",
+        "        return manifestPath;",
+        "      }",
+        "    } catch {}",
+        "",
+        "    const parent = path.dirname(current);",
+        "    if (parent === current) {",
+        "      return null;",
+        "    }",
+        "    current = parent;",
+        "  }",
+        "}",
+        "",
+        "async function isOptionalDependencyImport(specifier, importerPath) {",
+        "  if (!isBareSpecifier(specifier)) {",
+        "    return false;",
+        "  }",
+        "",
+        "  const manifestPath = await findClosestPackageManifest(importerPath);",
+        "  if (!manifestPath) {",
+        "    return false;",
+        "  }",
+        "",
+        '  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));',
+        "  const packageName = getPackageName(specifier);",
+        "  if (manifest.optionalDependencies?.[packageName]) {",
+        "    return true;",
+        "  }",
+        "",
+        "  return manifest.peerDependenciesMeta?.[packageName]?.optional === true;",
+        "}",
+        "",
+        "function serializeBuildLog(log) {",
+        "  return {",
+        "    message: log.message,",
+        "    importKind: log.importKind,",
+        "    specifier: log.specifier,",
+        "    position: log.position?.file ? { file: log.position.file } : undefined,",
+        "  };",
+        "}",
+        "",
+        "async function collectOptionalDependenciesForInputs(inputPaths) {",
+        "  const manifestPaths = new Set();",
+        "  for (const inputPath of inputPaths) {",
+        "    const manifestPath = await findClosestPackageManifest(inputPath);",
+        "    if (manifestPath) {",
+        "      manifestPaths.add(manifestPath);",
+        "    }",
+        "  }",
+        "",
+        "  const optionalDependencies = new Set();",
+        "  for (const manifestPath of manifestPaths) {",
+        '    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));',
+        "    for (const dependency of Object.keys(manifest.optionalDependencies ?? {})) {",
+        "      optionalDependencies.add(dependency);",
+        "    }",
+        "",
+        "    for (const [dependency, meta] of Object.entries(manifest.peerDependenciesMeta ?? {})) {",
+        "      if (meta.optional) {",
+        "        optionalDependencies.add(dependency);",
+        "      }",
+        "    }",
+        "  }",
+        "",
+        "  return [...optionalDependencies];",
+        "}",
+        "",
+        "async function findOptionalDynamicImports(logs) {",
+        "  const optionalImports = new Set();",
+        "",
+        "  for (const log of logs) {",
+        '    if (log.importKind !== "dynamic-import" || !log.specifier || !log.position?.file || !log.message.includes("Could not resolve")) {',
+        "      continue;",
+        "    }",
+        "",
+        "    if (await isOptionalDependencyImport(log.specifier, log.position.file)) {",
+        "      optionalImports.add(log.specifier);",
+        "    }",
+        "  }",
+        "",
+        "  return [...optionalImports];",
+        "}",
+        "",
+        `const MISSING_OPTIONAL_DEPENDENCY_TEMPLATE = ${JSON.stringify(
+          createMissingOptionalDependencyModule("__PUBM_OPTIONAL_DEPENDENCY__")
+        )};`,
+        "",
+        "function createMissingOptionalDependencyModule(specifier) {",
+        '  return MISSING_OPTIONAL_DEPENDENCY_TEMPLATE.replace("__PUBM_OPTIONAL_DEPENDENCY__", specifier);',
+        "}",
+        "",
+        "function createOptionalDependencyPlugin(specifiers) {",
+        "  const missingSpecifiers = new Set(specifiers);",
+        "",
+        "  return {",
+        '    name: "pubm-optional-dependency-plugin",',
+        '    target: "bun",',
+        "    setup(builder) {",
+        "      builder.onResolve({ filter: /.*/ }, (args) => {",
+        "        if (!missingSpecifiers.has(args.path)) {",
+        "          return;",
+        "        }",
+        "",
+        "        return { path: args.path, namespace: OPTIONAL_DEPENDENCY_NAMESPACE };",
+        "      });",
+        "",
+        "      builder.onLoad({ filter: /.*/, namespace: OPTIONAL_DEPENDENCY_NAMESPACE }, (args) => ({",
+        "        contents: createMissingOptionalDependencyModule(args.path),",
+        '        loader: "js",',
+        "      }));",
+        "    },",
+        "  };",
+        "}",
+        "",
+        "function createConfigModuleShimPlugin() {",
+        "  const shims = new Map(Object.entries(CONFIG_MODULE_SHIMS));",
+        "",
+        "  return {",
+        '    name: "pubm-config-module-shim-plugin",',
+        '    target: "bun",',
+        "    setup(builder) {",
+        "      builder.onResolve({ filter: /.*/ }, (args) => {",
+        "        if (!shims.has(args.path)) {",
+        "          return;",
+        "        }",
+        "",
+        "        return { path: args.path, namespace: CONFIG_MODULE_NAMESPACE };",
+        "      });",
+        "",
+        "      builder.onLoad({ filter: /.*/, namespace: CONFIG_MODULE_NAMESPACE }, (args) => ({",
+        "        contents: shims.get(args.path),",
+        '        loader: "js",',
+        "      }));",
+        "    },",
+        "  };",
+        "}",
+        "",
+        "async function runBuild(optionalDynamicImports = []) {",
+        '  const entrypointSource = await readFile(entrypoint, "utf8");',
+        "  return Bun.build({",
+        "    entrypoints: [entrypoint],",
+        '    target: "bun",',
+        "    format,",
+        "    minify: true,",
+        "    external: [],",
+        '    packages: "bundle",',
+        "    splitting: false,",
+        "    metafile: true,",
+        "    throw: false,",
+        "    files: {",
+        "      [entrypoint]: rewriteImportMeta(entrypointSource, entrypoint),",
+        "    },",
+        "    plugins: [",
+        "      createConfigModuleShimPlugin(),",
+        "      ...(optionalDynamicImports.length > 0 ? [createOptionalDependencyPlugin(optionalDynamicImports)] : []),",
+        "    ],",
+        "  });",
+        "}",
+        "",
+        "let result = await runBuild();",
+        "if (!result.success) {",
+        "  const optionalDynamicImports = await findOptionalDynamicImports(result.logs.map(serializeBuildLog));",
+        "  if (optionalDynamicImports.length > 0) {",
+        "    result = await runBuild(optionalDynamicImports);",
+        "  }",
+        "}",
+        "",
+        'const entrypointFile = result.outputs.find((file) => file.kind === "entry-point");',
+        "if (entrypointFile) {",
+        '  await writeFile(outfile, await entrypointFile.text(), "utf8");',
+        "}",
+        "",
+        "const optionalDependencies = await collectOptionalDependenciesForInputs(",
+        "  Object.keys(result.metafile?.inputs ?? {}),",
+        ");",
+        "",
+        "await writeFile(",
+        "  resultFile,",
+        "  JSON.stringify({",
+        "    success: result.success,",
+        "    logs: result.logs.map(serializeBuildLog),",
+        "    optionalDependencies,",
+        "    hasEntrypoint: entrypointFile != null,",
+        "  }),",
+        '  "utf8",',
+        ");"
+      ].join("\n"),
+      "utf8"
+    );
+    await new Promise((resolve, reject) => {
+      execFile("bun", [buildScript], (error3, _stdout, stderr) => {
+        if (error3) {
+          reject(
+            new Error(
+              stderr || `Failed to build config via bun: ${error3.message}`
+            )
+          );
+          return;
+        }
+        resolve();
+      });
+    });
+    const result = JSON.parse(
+      await readFile6(resultFile, "utf8")
+    );
+    const contents = result.hasEntrypoint ? await readFile6(outfile, "utf8") : null;
+    return {
+      success: result.success,
+      logs: result.logs,
+      optionalDependencies: result.optionalDependencies,
+      outputs: contents ? [createEntryPointOutput(contents)] : []
+    };
+  } catch (error3) {
+    return {
+      success: false,
+      logs: [
+        {
+          message: error3 instanceof Error ? error3.message : "Failed to build config via bun"
+        }
+      ],
+      optionalDependencies: [],
+      outputs: []
+    };
+  } finally {
+    await rm2(tempDir, { recursive: true, force: true });
+  }
+}
+function rewriteImportMeta(source, configPath) {
+  const replacements = [
+    ["import.meta.dirname", JSON.stringify(path8.dirname(configPath))],
+    ["import.meta.filename", JSON.stringify(configPath)],
+    ["import.meta.path", JSON.stringify(configPath)],
+    ["import.meta.url", JSON.stringify(pathToFileURL(configPath).href)],
+    ["import.meta.dir", JSON.stringify(path8.dirname(configPath))]
+  ];
+  let rewritten = source;
+  for (const [pattern, value] of replacements) {
+    rewritten = rewritten.split(pattern).join(value);
+  }
+  return rewritten;
+}
+function normalizeConfigNamespace(namespace) {
+  return namespace.default ?? namespace;
+}
+async function importConfigModule(configPath) {
+  const namespace = await import(`${pathToFileURL(configPath).href}?t=${Date.now()}`);
+  return normalizeConfigNamespace(namespace);
+}
+async function importBundledConfig(source, configPath, optionalDependencies) {
+  const tempDir = await mkdtemp(
+    path8.join(path8.dirname(configPath), ".pubm-config-module-")
+  );
+  const tempFile = path8.join(tempDir, "pubm.config.mjs");
+  try {
+    await writeOptionalDependencyStubs(
+      tempDir,
+      path8.dirname(configPath),
+      optionalDependencies
+    );
+    await writeFile4(tempFile, source, "utf8");
+    return importConfigModule(tempFile);
+  } finally {
+    await rm2(tempDir, { recursive: true, force: true });
+  }
+}
+async function executeBundledConfigInVm(source, configPath) {
+  const module = { exports: {} };
+  const require2 = createRequire(pathToFileURL(configPath));
+  const context3 = vm.createContext({
+    module,
+    exports: module.exports,
+    require: require2,
+    __filename: configPath,
+    __dirname: path8.dirname(configPath),
+    console,
+    process,
+    Buffer,
+    URL,
+    URLSearchParams,
+    TextEncoder,
+    TextDecoder,
+    structuredClone,
+    queueMicrotask,
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
+    setImmediate,
+    clearImmediate,
+    Bun: globalThis.Bun
+  });
+  context3.globalThis = context3;
+  context3.global = context3;
+  context3.self = context3;
+  new vm.Script(source, { filename: configPath }).runInContext(context3);
+  return normalizeConfigNamespace(module.exports);
+}
+function formatStageError(stage, error3) {
+  const message = error3 instanceof Error ? error3.stack ?? error3.message : String(error3);
+  return `[${stage}] ${message}`;
+}
+async function loadConfig(cwd = process.cwd(), configPath) {
+  let resolvedConfigPath;
+  if (configPath) {
+    resolvedConfigPath = path8.resolve(cwd, configPath);
+    try {
+      if (!(await stat7(resolvedConfigPath)).isFile()) {
+        throw new Error(`Config path is not a file: ${resolvedConfigPath}`);
+      }
+    } catch (e2) {
+      if (e2.code === "ENOENT") {
+        throw new Error(`Config file not found: ${resolvedConfigPath}`);
+      }
+      throw e2;
+    }
+  } else {
+    resolvedConfigPath = await findConfigFile(cwd);
+  }
+  if (!resolvedConfigPath) return null;
+  const errors = [];
+  try {
+    return await importConfigModule(resolvedConfigPath);
+  } catch (error3) {
+    errors.push(formatStageError("native import", error3));
+  }
+  const output = await buildConfig(resolvedConfigPath);
+  if (!output.success) {
+    errors.push(
+      formatStageError(
+        "bundled build",
+        output.logs.map((log) => log.message).join("\n")
+      )
+    );
+    throw new Error(`Failed to load config:
+${errors.join("\n\n")}`);
+  }
+  const entrypoint = output.outputs.find((file) => file.kind === "entry-point");
+  if (!entrypoint) {
+    errors.push(formatStageError("bundled build", "missing entrypoint output"));
+    throw new Error(`Failed to load config:
+${errors.join("\n\n")}`);
+  }
+  const bundledSource = await entrypoint.text();
+  try {
+    return await importBundledConfig(
+      bundledSource,
+      resolvedConfigPath,
+      output.optionalDependencies
+    );
+  } catch (error3) {
+    errors.push(formatStageError("bundled import", error3));
+  }
+  const vmOutput = await buildConfigWithFormat(resolvedConfigPath, "cjs");
+  if (!vmOutput.success) {
+    errors.push(
+      formatStageError(
+        "bundled vm build",
+        vmOutput.logs.map((log) => log.message).join("\n")
+      )
+    );
+    throw new Error(`Failed to load config:
+${errors.join("\n\n")}`);
+  }
+  const vmEntrypoint = vmOutput.outputs.find(
+    (file) => file.kind === "entry-point"
+  );
+  if (!vmEntrypoint) {
+    errors.push(
+      formatStageError("bundled vm build", "missing entrypoint output")
+    );
+    throw new Error(`Failed to load config:
+${errors.join("\n\n")}`);
+  }
+  try {
+    return await executeBundledConfigInVm(
+      await vmEntrypoint.text(),
+      resolvedConfigPath
+    );
+  } catch (error3) {
+    errors.push(formatStageError("bundled vm", error3));
+    throw new Error(`Failed to load config:
+${errors.join("\n\n")}`);
+  }
+}
 
 // ../pubm-issue-34-release-workflow/packages/core/src/index.ts
 init_context();
@@ -47953,9 +49111,9 @@ init_catalog();
 init_manifest_reader();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/migrate/adapters/np.ts
-import { existsSync as existsSync4, readFileSync as readFileSync4 } from "node:fs";
-import path7 from "node:path";
-import { pathToFileURL } from "node:url";
+import { existsSync as existsSync5, readFileSync as readFileSync5 } from "node:fs";
+import path9 from "node:path";
+import { pathToFileURL as pathToFileURL2 } from "node:url";
 var STANDALONE_CONFIG_FILES = [
   ".np-config.json",
   ".np-config.js",
@@ -47977,13 +49135,13 @@ var UNMAPPABLE_KEYS = {
 async function readNpConfig(filePath, isPackageJson) {
   if (filePath.endsWith(".js") || filePath.endsWith(".cjs") || filePath.endsWith(".mjs")) {
     try {
-      const mod = await import(pathToFileURL(filePath).href);
+      const mod = await import(pathToFileURL2(filePath).href);
       return mod.default ?? mod ?? {};
     } catch {
       return {};
     }
   }
-  const raw = readFileSync4(filePath, "utf-8");
+  const raw = readFileSync5(filePath, "utf-8");
   const parsed = JSON.parse(raw);
   if (isPackageJson) {
     return parsed.np ?? {};
@@ -48058,15 +49216,15 @@ var npAdapter = {
   async detect(cwd) {
     const configFiles = [];
     for (const filename of STANDALONE_CONFIG_FILES) {
-      const filePath = path7.join(cwd, filename);
-      if (existsSync4(filePath)) {
+      const filePath = path9.join(cwd, filename);
+      if (existsSync5(filePath)) {
         configFiles.push(filePath);
       }
     }
-    const pkgJsonPath = path7.join(cwd, PACKAGE_JSON);
-    if (existsSync4(pkgJsonPath)) {
+    const pkgJsonPath = path9.join(cwd, PACKAGE_JSON);
+    if (existsSync5(pkgJsonPath)) {
       try {
-        const raw = readFileSync4(pkgJsonPath, "utf-8");
+        const raw = readFileSync5(pkgJsonPath, "utf-8");
         const parsed = JSON.parse(raw);
         if ("np" in parsed) {
           configFiles.push(pkgJsonPath);
@@ -48083,11 +49241,11 @@ var npAdapter = {
   async parse(files, _cwd) {
     const standaloneFile = files.find(
       (f) => STANDALONE_CONFIG_FILES.some(
-        (name) => f.endsWith(path7.sep + name) || f.endsWith(`/${name}`)
+        (name) => f.endsWith(path9.sep + name) || f.endsWith(`/${name}`)
       )
     );
     const pkgJsonFile = files.find(
-      (f) => f.endsWith(path7.sep + PACKAGE_JSON) || f.endsWith(`/${PACKAGE_JSON}`)
+      (f) => f.endsWith(path9.sep + PACKAGE_JSON) || f.endsWith(`/${PACKAGE_JSON}`)
     );
     const configFile = standaloneFile ?? pkgJsonFile;
     if (configFile === void 0) {
@@ -48108,16 +49266,16 @@ var npAdapter = {
   },
   getCleanupTargets(detected) {
     return detected.configFiles.filter(
-      (f) => !f.endsWith(path7.sep + PACKAGE_JSON) && !f.endsWith(`/${PACKAGE_JSON}`)
+      (f) => !f.endsWith(path9.sep + PACKAGE_JSON) && !f.endsWith(`/${PACKAGE_JSON}`)
     );
   }
 };
 
 // ../pubm-issue-34-release-workflow/packages/core/src/migrate/adapters/release-it.ts
 var import_yaml4 = __toESM(require_dist(), 1);
-import { existsSync as existsSync5, readFileSync as readFileSync5 } from "node:fs";
-import path8 from "node:path";
-import { pathToFileURL as pathToFileURL2 } from "node:url";
+import { existsSync as existsSync6, readFileSync as readFileSync6 } from "node:fs";
+import path10 from "node:path";
+import { pathToFileURL as pathToFileURL3 } from "node:url";
 var STANDALONE_CONFIG_FILES2 = [
   ".release-it.json",
   ".release-it.yaml",
@@ -48131,17 +49289,17 @@ var CONVENTIONAL_CHANGELOG_PLUGIN = "@release-it/conventional-changelog";
 async function loadConfigFile(filePath) {
   if (filePath.endsWith(".js") || filePath.endsWith(".cjs") || filePath.endsWith(".ts")) {
     try {
-      const mod = await import(pathToFileURL2(filePath).href);
+      const mod = await import(pathToFileURL3(filePath).href);
       return mod.default ?? mod ?? {};
     } catch {
       return null;
     }
   }
-  const raw = readFileSync5(filePath, "utf-8");
+  const raw = readFileSync6(filePath, "utf-8");
   if (filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
     return import_yaml4.default.parse(raw);
   }
-  if (filePath.endsWith(path8.sep + PACKAGE_JSON2) || filePath.endsWith(`/${PACKAGE_JSON2}`)) {
+  if (filePath.endsWith(path10.sep + PACKAGE_JSON2) || filePath.endsWith(`/${PACKAGE_JSON2}`)) {
     const parsed = JSON.parse(raw);
     return parsed["release-it"] ?? {};
   }
@@ -48256,15 +49414,15 @@ var releaseItAdapter = {
   async detect(cwd) {
     const configFiles = [];
     for (const filename of STANDALONE_CONFIG_FILES2) {
-      const filePath = path8.join(cwd, filename);
-      if (existsSync5(filePath)) {
+      const filePath = path10.join(cwd, filename);
+      if (existsSync6(filePath)) {
         configFiles.push(filePath);
       }
     }
-    const pkgJsonPath = path8.join(cwd, PACKAGE_JSON2);
-    if (existsSync5(pkgJsonPath)) {
+    const pkgJsonPath = path10.join(cwd, PACKAGE_JSON2);
+    if (existsSync6(pkgJsonPath)) {
       try {
-        const raw = readFileSync5(pkgJsonPath, "utf-8");
+        const raw = readFileSync6(pkgJsonPath, "utf-8");
         const parsed = JSON.parse(raw);
         if ("release-it" in parsed) {
           configFiles.push(pkgJsonPath);
@@ -48281,11 +49439,11 @@ var releaseItAdapter = {
   async parse(files, _cwd) {
     const standaloneFile = files.find(
       (f) => STANDALONE_CONFIG_FILES2.some(
-        (name) => f.endsWith(path8.sep + name) || f.endsWith(`/${name}`)
+        (name) => f.endsWith(path10.sep + name) || f.endsWith(`/${name}`)
       )
     );
     const pkgJsonFile = files.find(
-      (f) => f.endsWith(path8.sep + PACKAGE_JSON2) || f.endsWith(`/${PACKAGE_JSON2}`)
+      (f) => f.endsWith(path10.sep + PACKAGE_JSON2) || f.endsWith(`/${PACKAGE_JSON2}`)
     );
     const configFile = standaloneFile ?? pkgJsonFile;
     if (configFile === void 0) {
@@ -48317,16 +49475,16 @@ var releaseItAdapter = {
   },
   getCleanupTargets(detected) {
     return detected.configFiles.filter(
-      (f) => !f.endsWith(path8.sep + PACKAGE_JSON2) && !f.endsWith(`/${PACKAGE_JSON2}`)
+      (f) => !f.endsWith(path10.sep + PACKAGE_JSON2) && !f.endsWith(`/${PACKAGE_JSON2}`)
     );
   }
 };
 
 // ../pubm-issue-34-release-workflow/packages/core/src/migrate/adapters/semantic-release.ts
 var import_yaml5 = __toESM(require_dist(), 1);
-import { existsSync as existsSync6, readFileSync as readFileSync6 } from "node:fs";
-import path9 from "node:path";
-import { pathToFileURL as pathToFileURL3 } from "node:url";
+import { existsSync as existsSync7, readFileSync as readFileSync7 } from "node:fs";
+import path11 from "node:path";
+import { pathToFileURL as pathToFileURL4 } from "node:url";
 var STANDALONE_CONFIG_FILES3 = [
   ".releaserc",
   ".releaserc.json",
@@ -48400,21 +49558,21 @@ function extractPrereleaseBranches(branches) {
 async function loadConfigFile2(filePath) {
   if (filePath.endsWith(".js") || filePath.endsWith(".cjs") || filePath.endsWith(".mjs")) {
     try {
-      const mod = await import(pathToFileURL3(filePath).href);
+      const mod = await import(pathToFileURL4(filePath).href);
       return mod.default ?? mod ?? {};
     } catch {
       return {};
     }
   }
-  const raw = readFileSync6(filePath, "utf-8");
+  const raw = readFileSync7(filePath, "utf-8");
   if (filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
     return import_yaml5.default.parse(raw);
   }
-  if (filePath.endsWith(path9.sep + PACKAGE_JSON3) || filePath.endsWith(`/${PACKAGE_JSON3}`)) {
+  if (filePath.endsWith(path11.sep + PACKAGE_JSON3) || filePath.endsWith(`/${PACKAGE_JSON3}`)) {
     const parsed = JSON.parse(raw);
     return parsed.release ?? {};
   }
-  const basename = path9.basename(filePath);
+  const basename = path11.basename(filePath);
   if (basename === ".releaserc") {
     try {
       return JSON.parse(raw);
@@ -48528,15 +49686,15 @@ var semanticReleaseAdapter = {
   async detect(cwd) {
     const configFiles = [];
     for (const filename of STANDALONE_CONFIG_FILES3) {
-      const filePath = path9.join(cwd, filename);
-      if (existsSync6(filePath)) {
+      const filePath = path11.join(cwd, filename);
+      if (existsSync7(filePath)) {
         configFiles.push(filePath);
       }
     }
-    const pkgJsonPath = path9.join(cwd, PACKAGE_JSON3);
-    if (existsSync6(pkgJsonPath)) {
+    const pkgJsonPath = path11.join(cwd, PACKAGE_JSON3);
+    if (existsSync7(pkgJsonPath)) {
       try {
-        const raw = readFileSync6(pkgJsonPath, "utf-8");
+        const raw = readFileSync7(pkgJsonPath, "utf-8");
         const parsed = JSON.parse(raw);
         if ("release" in parsed) {
           configFiles.push(pkgJsonPath);
@@ -48553,11 +49711,11 @@ var semanticReleaseAdapter = {
   async parse(files, _cwd) {
     const standaloneFile = files.find(
       (f) => STANDALONE_CONFIG_FILES3.some(
-        (name) => f.endsWith(path9.sep + name) || f.endsWith(`/${name}`)
+        (name) => f.endsWith(path11.sep + name) || f.endsWith(`/${name}`)
       )
     );
     const pkgJsonFile = files.find(
-      (f) => f.endsWith(path9.sep + PACKAGE_JSON3) || f.endsWith(`/${PACKAGE_JSON3}`)
+      (f) => f.endsWith(path11.sep + PACKAGE_JSON3) || f.endsWith(`/${PACKAGE_JSON3}`)
     );
     const configFile = standaloneFile ?? pkgJsonFile;
     if (configFile === void 0) {
@@ -48577,7 +49735,7 @@ var semanticReleaseAdapter = {
   },
   getCleanupTargets(detected) {
     return detected.configFiles.filter(
-      (f) => !f.endsWith(path9.sep + PACKAGE_JSON3) && !f.endsWith(`/${PACKAGE_JSON3}`)
+      (f) => !f.endsWith(path11.sep + PACKAGE_JSON3) && !f.endsWith(`/${PACKAGE_JSON3}`)
     );
   }
 };
@@ -48660,18 +49818,18 @@ init_ui();
 init_exec();
 
 // ../pubm-issue-34-release-workflow/node_modules/.bun/update-kit@0.1.12/node_modules/update-kit/dist/index.mjs
-import { execFile } from "child_process";
+import { execFile as execFile2 } from "child_process";
 import { promisify } from "util";
 var import_semver13 = __toESM(require_semver2(), 1);
 var import_semver14 = __toESM(require_semver2(), 1);
 var import_semver15 = __toESM(require_semver2(), 1);
-import { execFile as execFile2 } from "child_process";
+import { execFile as execFile22 } from "child_process";
 import { promisify as promisify2 } from "util";
 import { execFile as execFile3 } from "child_process";
 import { promisify as promisify3 } from "util";
 var MAX_COMMAND_OUTPUT_BYTES = 10 * 1024 * 1024;
-var execFileAsync = promisify(execFile);
-var execFileAsync2 = promisify2(execFile2);
+var execFileAsync = promisify(execFile2);
+var execFileAsync2 = promisify2(execFile22);
 var execFileAsync3 = promisify3(execFile3);
 
 // ../pubm-issue-34-release-workflow/packages/core/src/utils/notify-new-version.ts
@@ -48704,23 +49862,144 @@ init_package_key();
 var import_micromatch8 = __toESM(require_micromatch(), 1);
 init_package_key();
 
+// src/changeset-check/main.ts
+import path14 from "node:path";
+
+// src/templates.ts
+var MARKER = "<!-- pubm:changeset-check -->";
+var FOOTER = '<sub>Validated by <a href="https://github.com/syi0808/pubm-actions">pubm changeset check</a></sub>';
+function successBody(changesets) {
+  const rows = changesets.flatMap(
+    (cs) => cs.releases.map(
+      (r) => `| \`${cs.id}.md\` | \`${r.path}\` | ${r.type} |`
+    )
+  );
+  return `${MARKER}
+### \u2705 Changeset detected
+
+| File | Package | Bump |
+|------|---------|------|
+${rows.join("\n")}
+
+${FOOTER}`;
+}
+function missingBody(skipLabel) {
+  return `${MARKER}
+### \u274C No changeset found
+
+This PR doesn't include a changeset. If the change affects users, add one by running:
+
+\`\`\`sh
+pubm changesets add
+\`\`\`
+
+This creates a file in \`.pubm/changesets/\` that describes the change and its semver bump.
+
+If this PR doesn't need a changeset (docs, CI, refactoring, etc.), add the **\`${skipLabel}\`** label to skip this check.
+
+${FOOTER}`;
+}
+function invalidBody(errors) {
+  const rows = errors.map(
+    (e2) => `| \`${e2.file}\` | ${e2.message} |`
+  );
+  return `${MARKER}
+### \u274C Invalid changeset(s)
+
+These changeset files have validation errors:
+
+| File | Error |
+|------|-------|
+${rows.join("\n")}
+
+Fix these and push again.
+
+${FOOTER}`;
+}
+function skippedBody(label) {
+  return `${MARKER}
+### \u26A0\uFE0F Changeset check skipped
+
+The **\`${label}\`** label is on this PR, so no changeset is needed.
+
+${FOOTER}`;
+}
+
+// src/comment.ts
+async function upsertComment(octokit, ctx, body, marker = MARKER) {
+  const { data: comments } = await octokit.rest.issues.listComments({
+    owner: ctx.owner,
+    repo: ctx.repo,
+    issue_number: ctx.issueNumber
+  });
+  const existing = comments.find((c) => c.body?.includes(marker));
+  if (existing) {
+    await octokit.rest.issues.updateComment({
+      owner: ctx.owner,
+      repo: ctx.repo,
+      comment_id: existing.id,
+      body
+    });
+  } else {
+    await octokit.rest.issues.createComment({
+      owner: ctx.owner,
+      repo: ctx.repo,
+      issue_number: ctx.issueNumber,
+      body
+    });
+  }
+}
+
+// src/detect.ts
+import { execFileSync } from "node:child_process";
+import path12 from "node:path";
+function detectChangesetFiles(baseBranch, cwd, directory = ".pubm/changesets") {
+  try {
+    const changesetDirectory = normalizeChangesetDirectory(directory);
+    const output = execFileSync(
+      "git",
+      [
+        "diff",
+        "--name-only",
+        "--diff-filter=ACMR",
+        `origin/${baseBranch}...HEAD`,
+        "--",
+        `${changesetDirectory}/*.md`
+      ],
+      { cwd, encoding: "utf8" }
+    );
+    return output.trim().split("\n").filter((f) => f.length > 0).filter(
+      (f) => path12.posix.basename(f.replace(/\\/g, "/")) !== "README.md"
+    );
+  } catch {
+    return [];
+  }
+}
+function normalizeChangesetDirectory(directory) {
+  const normalized = directory.replace(/\\/g, "/").replace(/\/+$/, "");
+  if (!normalized || normalized === ".") return ".";
+  return normalized;
+}
+
 // src/validate.ts
-function validateChangesets(files, cwd) {
+import { existsSync as existsSync8, readFileSync as readFileSync8 } from "node:fs";
+import path13 from "node:path";
+function validateChangesets(files, cwd, resolveKey) {
   const valid2 = [];
   const errors = [];
   for (const file of files) {
-    const filePath = path10.join(cwd, file);
-    const fileName = path10.basename(file);
+    const filePath = path13.join(cwd, file);
+    const fileName = path13.basename(file);
     let content;
     try {
-      content = readFileSync7(filePath, "utf8");
+      content = readFileSync8(filePath, "utf8");
     } catch {
       errors.push({ file: fileName, message: "File could not be read" });
       continue;
     }
     let changeset;
     try {
-      changeset = parseChangeset(content, fileName);
+      changeset = parseChangeset(content, fileName, resolveKey);
     } catch (err) {
       errors.push({
         file: fileName,
@@ -48743,8 +50022,8 @@ function validateChangesets(files, cwd) {
       continue;
     }
     for (const release of changeset.releases) {
-      const pkgPath = path10.join(cwd, release.path);
-      if (!existsSync7(pkgPath)) {
+      const pkgPath = path13.join(cwd, release.path);
+      if (!existsSync8(pkgPath)) {
         errors.push({
           file: fileName,
           message: `Package path "${release.path}" does not exist`
@@ -48764,6 +50043,8 @@ async function run2() {
   const shouldComment = getInput("comment") === "true";
   const token = getInput("token");
   const workingDirectory = getInput("working-directory");
+  const cwd = path14.resolve(process.cwd(), workingDirectory || ".");
+  const changesetConfig = await loadChangesetCheckConfig(cwd);
   const octokit = getOctokit(token);
   const { context: context3 } = github_exports;
   if (!context3.payload.pull_request) {
@@ -48787,7 +50068,11 @@ async function run2() {
     return;
   }
   const baseBranch = pr.base.ref;
-  const files = detectChangesetFiles(baseBranch, workingDirectory);
+  const files = detectChangesetFiles(
+    baseBranch,
+    cwd,
+    changesetConfig.directory
+  );
   setOutput("changeset-files", files.join("\n"));
   if (files.length === 0) {
     setOutput("status", "missing");
@@ -48798,7 +50083,7 @@ async function run2() {
     setFailed("No changeset found");
     return;
   }
-  const result = validateChangesets(files, workingDirectory);
+  const result = validateChangesets(files, cwd, changesetConfig.resolveKey);
   setOutput("errors", JSON.stringify(result.errors));
   if (result.errors.length > 0) {
     setOutput("status", "invalid");
@@ -48814,6 +50099,14 @@ async function run2() {
   if (shouldComment) {
     await upsertComment(octokit, commentCtx, successBody(result.valid));
   }
+}
+async function loadChangesetCheckConfig(cwd) {
+  const loaded = await loadConfig(cwd) ?? {};
+  const config = await resolveConfig(loaded, cwd);
+  return {
+    directory: config.release.changesets.directory,
+    resolveKey: createKeyResolver(config.packages)
+  };
 }
 run2().catch((err) => {
   setFailed(err instanceof Error ? err.message : String(err));
