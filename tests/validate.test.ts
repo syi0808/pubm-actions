@@ -1,20 +1,47 @@
-import { describe, it, expect, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+} from "vitest";
 import { validateChangesets } from "../src/validate.js";
-import * as fs from "node:fs";
-
-vi.mock("node:fs");
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 describe("validateChangesets", () => {
+	let cwd: string;
+
+	beforeEach(() => {
+		cwd = mkdtempSync(path.join(tmpdir(), "pubm-actions-validate-"));
+		mkdirSync(path.join(cwd, ".pubm", "changesets"), { recursive: true });
+	});
+
+	afterEach(() => {
+		rmSync(cwd, { recursive: true, force: true });
+	});
+
+	function writeChangeset(file: string, content: string) {
+		writeFileSync(path.join(cwd, file), content);
+	}
+
+	function makePackage(packagePath: string) {
+		mkdirSync(path.join(cwd, packagePath), { recursive: true });
+	}
+
 	it("validates a correct changeset", () => {
-		vi.mocked(fs.readFileSync).mockReturnValue(
+		makePackage("packages/core");
+		writeChangeset(
+			".pubm/changesets/brave-fox.md",
 			"---\npackages/core: minor\n---\n\nAdd new feature\n",
 		);
-		vi.mocked(fs.existsSync).mockReturnValue(true);
 
 		const result = validateChangesets(
 			[".pubm/changesets/brave-fox.md"],
-			"/project",
+			cwd,
 		);
+
 		expect(result.valid).toHaveLength(1);
 		expect(result.errors).toHaveLength(0);
 		expect(result.valid[0].id).toBe("brave-fox");
@@ -24,99 +51,124 @@ describe("validateChangesets", () => {
 		});
 	});
 
+	it("validates package names through the core package key resolver", () => {
+		makePackage("packages/core");
+		writeChangeset(
+			".pubm/changesets/name-key.md",
+			'---\n"@scope/core": minor\n---\n\nAdd named package support\n',
+		);
+
+		const result = validateChangesets(
+			[".pubm/changesets/name-key.md"],
+			cwd,
+			(key) => (key === "@scope/core" ? "packages/core::js" : key),
+		);
+
+		expect(result.errors).toHaveLength(0);
+		expect(result.valid[0].releases[0]).toEqual({
+			path: "packages/core",
+			ecosystem: "js",
+			type: "minor",
+		});
+	});
+
 	it("reports error for missing frontmatter", () => {
-		vi.mocked(fs.readFileSync).mockReturnValue("No frontmatter here\n");
+		writeChangeset(".pubm/changesets/bad-file.md", "No frontmatter here\n");
 
 		const result = validateChangesets(
 			[".pubm/changesets/bad-file.md"],
-			"/project",
+			cwd,
 		);
+
 		expect(result.valid).toHaveLength(0);
 		expect(result.errors).toHaveLength(1);
 		expect(result.errors[0].message).toContain("missing frontmatter");
 	});
 
 	it("reports error for invalid bump type", () => {
-		vi.mocked(fs.readFileSync).mockReturnValue(
+		writeChangeset(
+			".pubm/changesets/bad-bump.md",
 			"---\npackages/core: big\n---\n\nSome change\n",
 		);
 
 		const result = validateChangesets(
 			[".pubm/changesets/bad-bump.md"],
-			"/project",
+			cwd,
 		);
+
 		expect(result.errors).toHaveLength(1);
 		expect(result.errors[0].message).toContain('Invalid bump type "big"');
 	});
 
 	it("reports error for empty summary", () => {
-		vi.mocked(fs.readFileSync).mockReturnValue(
+		makePackage("packages/core");
+		writeChangeset(
+			".pubm/changesets/empty-summary.md",
 			"---\npackages/core: patch\n---\n",
 		);
-		vi.mocked(fs.existsSync).mockReturnValue(true);
 
 		const result = validateChangesets(
 			[".pubm/changesets/empty-summary.md"],
-			"/project",
+			cwd,
 		);
+
 		expect(result.errors).toHaveLength(1);
 		expect(result.errors[0].message).toContain("summary is empty");
 	});
 
 	it("reports error for empty frontmatter (no releases)", () => {
-		vi.mocked(fs.readFileSync).mockReturnValue("---\n---\n\nSome change\n");
+		writeChangeset(
+			".pubm/changesets/no-releases.md",
+			"---\n---\n\nSome change\n",
+		);
 
 		const result = validateChangesets(
 			[".pubm/changesets/no-releases.md"],
-			"/project",
+			cwd,
 		);
+
 		expect(result.errors).toHaveLength(1);
 		expect(result.errors[0].message).toContain("No package releases");
 	});
 
 	it("reports error for non-existent package path", () => {
-		vi.mocked(fs.readFileSync).mockReturnValue(
+		writeChangeset(
+			".pubm/changesets/bad-path.md",
 			"---\npackages/nonexistent: patch\n---\n\nSome fix\n",
 		);
-		vi.mocked(fs.existsSync).mockReturnValue(false);
 
 		const result = validateChangesets(
 			[".pubm/changesets/bad-path.md"],
-			"/project",
+			cwd,
 		);
+
 		expect(result.errors).toHaveLength(1);
 		expect(result.errors[0].message).toContain("does not exist");
 	});
 
 	it("reports error when file cannot be read", () => {
-		vi.mocked(fs.readFileSync).mockImplementation(() => {
-			throw new Error("ENOENT");
-		});
+		const result = validateChangesets([".pubm/changesets/missing.md"], cwd);
 
-		const result = validateChangesets(
-			[".pubm/changesets/missing.md"],
-			"/project",
-		);
 		expect(result.errors).toHaveLength(1);
 		expect(result.errors[0].message).toBe("File could not be read");
 	});
 
 	it("handles multiple files with mixed results", () => {
-		vi.mocked(fs.readFileSync).mockImplementation((filePath) => {
-			if (String(filePath).includes("good")) {
-				return "---\npackages/core: minor\n---\n\nGood change\n";
-			}
-			return "No frontmatter";
-		});
-		vi.mocked(fs.existsSync).mockReturnValue(true);
+		makePackage("packages/core");
+		writeChangeset(
+			".pubm/changesets/good-file.md",
+			"---\npackages/core: minor\n---\n\nGood change\n",
+		);
+		writeChangeset(".pubm/changesets/bad-file.md", "No frontmatter");
 
 		const result = validateChangesets(
 			[
 				".pubm/changesets/good-file.md",
 				".pubm/changesets/bad-file.md",
 			],
-			"/project",
+			cwd,
 		);
+
 		expect(result.valid).toHaveLength(1);
 		expect(result.errors).toHaveLength(1);
 	});

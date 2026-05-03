@@ -4,13 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js",
+    "build": "node scripts/build.mjs",
     "test": "vitest --run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@actions/core": "^3.0.0",
     "@actions/github": "^9.0.0",
+    "@pubm/runner": "file:../pubm-issue-34-release-workflow/packages/runner",
     "yaml": "^2.8.3"
   },
   "devDependencies": {

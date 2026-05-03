@@ -56,4 +56,26 @@ describe("upsertComment", () => {
 		expect(octokit.rest.issues.createComment).toHaveBeenCalled();
 		expect(octokit.rest.issues.updateComment).not.toHaveBeenCalled();
 	});
+
+	it("only updates comments matching the requested marker", async () => {
+		const octokit = createMockOctokit([
+			{ id: 10, body: "<!-- pubm:changeset-check -->\nChangeset check" },
+			{ id: 20, body: "<!-- pubm:release-pr -->\nRelease PR" },
+		]);
+
+		await upsertComment(
+			octokit,
+			ctx,
+			"<!-- pubm:release-pr -->\nUpdated release PR",
+			"<!-- pubm:release-pr -->",
+		);
+
+		expect(octokit.rest.issues.updateComment).toHaveBeenCalledWith({
+			owner: "test-owner",
+			repo: "test-repo",
+			comment_id: 20,
+			body: "<!-- pubm:release-pr -->\nUpdated release PR",
+		});
+		expect(octokit.rest.issues.createComment).not.toHaveBeenCalled();
+	});
 });

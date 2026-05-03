@@ -1,9 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import {
-	type Changeset,
-	parseChangeset,
-} from "../pubm/packages/core/src/changeset/parser.js";
+import { type Changeset, parseChangeset } from "@pubm/core";
 
 export interface ValidationError {
 	file: string;
@@ -18,6 +15,7 @@ export interface ValidationResult {
 export function validateChangesets(
 	files: string[],
 	cwd: string,
+	resolveKey?: (key: string) => string | undefined,
 ): ValidationResult {
 	const valid: Changeset[] = [];
 	const errors: ValidationError[] = [];
@@ -36,7 +34,7 @@ export function validateChangesets(
 
 		let changeset: Changeset;
 		try {
-			changeset = parseChangeset(content, fileName);
+			changeset = parseChangeset(content, fileName, resolveKey);
 		} catch (err) {
 			errors.push({
 				file: fileName,

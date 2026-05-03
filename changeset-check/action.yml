@@ -33,5 +33,5 @@ outputs:
     description: "JSON array of validation error strings"
 
 runs:
-  using: "node20"
+  using: "node24"
   main: "dist/index.js"
