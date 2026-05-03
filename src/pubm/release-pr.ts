@@ -29,6 +29,7 @@ export function planReleasePrScopes(ctx: PubmContext): PlannedReleasePrScope[] {
 	return buildReleasePrScopes(ctx, plan).map((scope) => {
 		const scopedPlan = scopeVersionPlan(plan, scope);
 		const version = releasePrVersion(scopedPlan);
+		const pullRequest = ctx.config.release.pullRequest;
 		return {
 			scope,
 			version,
@@ -36,13 +37,13 @@ export function planReleasePrScopes(ctx: PubmContext): PlannedReleasePrScope[] {
 				ctx,
 				scope,
 				version,
-				template: ctx.config.releasePr.branchTemplate,
+				template: pullRequest.branchTemplate,
 			}),
 			title: renderReleasePrTitle({
 				ctx,
 				scope,
 				version,
-				template: ctx.config.releasePr.titleTemplate,
+				template: pullRequest.titleTemplate,
 			}),
 		};
 	});

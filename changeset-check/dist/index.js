@@ -48591,13 +48591,16 @@ init_runner();
 // ../pubm-issue-34-release-workflow/packages/core/src/index.ts
 init_catalog();
 
+// ../pubm-issue-34-release-workflow/packages/core/src/version-source/changeset-source.ts
+init_package_key();
+
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/required-missing-information.ts
-var import_semver11 = __toESM(require_semver2(), 1);
+var import_semver12 = __toESM(require_semver2(), 1);
 init_i18n();
 init_catalog();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
-var import_semver9 = __toESM(require_semver2(), 1);
+var import_semver10 = __toESM(require_semver2(), 1);
 init_i18n();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/utils/filter-config.ts
@@ -48607,41 +48610,41 @@ init_package_key();
 init_package_key();
 init_ui();
 
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/display.ts
-init_dist();
+// ../pubm-issue-34-release-workflow/packages/core/src/version-source/plan.ts
+var import_micromatch6 = __toESM(require_micromatch(), 1);
 var import_semver6 = __toESM(require_semver2(), 1);
-init_i18n();
-init_package_key();
-init_ui();
-var { SemVer: SemVer3 } = import_semver6.default;
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/fixed-mode.ts
-init_dist();
-var import_semver8 = __toESM(require_semver2(), 1);
-init_i18n();
 init_package_key();
 
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/version-choices.ts
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/display.ts
 init_dist();
 var import_semver7 = __toESM(require_semver2(), 1);
 init_i18n();
+init_package_key();
+init_ui();
+var { SemVer: SemVer3 } = import_semver7.default;
 
-// ../pubm-issue-34-release-workflow/packages/core/src/version-source/changeset-source.ts
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/fixed-mode.ts
+init_dist();
+var import_semver9 = __toESM(require_semver2(), 1);
+init_i18n();
 init_package_key();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/version-choices.ts
-var { RELEASE_TYPES, SemVer: SemVer4 } = import_semver7.default;
+init_dist();
+var import_semver8 = __toESM(require_semver2(), 1);
+init_i18n();
+var { RELEASE_TYPES, SemVer: SemVer4 } = import_semver8.default;
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
-var { SemVer: SemVer5 } = import_semver9.default;
+var { SemVer: SemVer5 } = import_semver10.default;
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/single-package.ts
-var import_semver10 = __toESM(require_semver2(), 1);
+var import_semver11 = __toESM(require_semver2(), 1);
 init_i18n();
 init_package_key();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/required-missing-information.ts
-var { prerelease: prerelease3 } = import_semver11.default;
+var { prerelease: prerelease3 } = import_semver12.default;
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/snapshot-runner.ts
 init_error4();
@@ -48659,9 +48662,9 @@ init_exec();
 // ../pubm-issue-34-release-workflow/node_modules/.bun/update-kit@0.1.12/node_modules/update-kit/dist/index.mjs
 import { execFile } from "child_process";
 import { promisify } from "util";
-var import_semver12 = __toESM(require_semver2(), 1);
 var import_semver13 = __toESM(require_semver2(), 1);
 var import_semver14 = __toESM(require_semver2(), 1);
+var import_semver15 = __toESM(require_semver2(), 1);
 import { execFile as execFile2 } from "child_process";
 import { promisify as promisify2 } from "util";
 import { execFile as execFile3 } from "child_process";
@@ -48682,12 +48685,7 @@ init_rollback();
 init_ui();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/validate/extraneous-files.ts
-var import_micromatch6 = __toESM(require_micromatch(), 1);
-
-// ../pubm-issue-34-release-workflow/packages/core/src/version-source/plan.ts
 var import_micromatch7 = __toESM(require_micromatch(), 1);
-var import_semver15 = __toESM(require_semver2(), 1);
-init_package_key();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-pr.ts
 init_catalog2();

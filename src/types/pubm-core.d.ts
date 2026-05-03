@@ -23,15 +23,35 @@ declare module "@pubm/core" {
 	export interface ResolvedPubmConfig {
 		branch: string;
 		tag?: string;
-		versioning?: string;
 		packages: PackageConfig[];
 		plugins: unknown[];
-		releasePr: {
-			label: string;
-			branchTemplate?: string;
-			titleTemplate?: string;
-			bumpLabels: Partial<Record<ReleasePrBumpOverride, string>>;
-			[key: string]: unknown;
+		release: {
+			versioning: {
+				mode: "fixed" | "independent";
+				fixed: string[][];
+				linked: string[][];
+				updateInternalDependencies: "patch" | "minor";
+			};
+			changesets: {
+				directory: string;
+			};
+			commits: {
+				format: "conventional";
+				types: Record<string, BumpType | false>;
+			};
+			changelog: boolean | string;
+			pullRequest: {
+				enabled: boolean;
+				label: string;
+				branchTemplate?: string;
+				titleTemplate?: string;
+				bumpLabels: Partial<Record<ReleasePrBumpOverride, string>>;
+				grouping: "fixed" | "independent";
+				fixed: string[][];
+				linked: string[][];
+				unversionedChanges: "ignore" | "warn" | "fail";
+				[key: string]: unknown;
+			};
 		};
 		[key: string]: unknown;
 	}
@@ -46,12 +66,25 @@ declare module "@pubm/core" {
 		config: ResolvedPubmConfig;
 		runtime: {
 			versionPlan?: VersionPlan;
+			releaseAnalysis?: {
+				recommendations: unknown[];
+				unversionedChanges: UnversionedChange[];
+			};
 			promptEnabled?: boolean;
 			cleanWorkingTree?: boolean;
 			pluginRunner?: unknown;
 			[key: string]: unknown;
 		};
 		[key: string]: unknown;
+	}
+
+	export interface UnversionedChange {
+		hash: string;
+		summary: string;
+		files: string[];
+		reason: "non-conventional" | "ignored-type" | "unmatched-package";
+		packagePath?: string;
+		type?: string;
 	}
 
 	export interface ReleasePrScope {

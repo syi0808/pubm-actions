@@ -49843,7 +49843,11 @@ function getCommitsSinceRef(cwd, ref, toRef) {
 }
 function execGitRaw(cwd, args) {
   try {
-    return execFileSync2("git", args, { cwd, encoding: "utf-8" });
+    return execFileSync2("git", args, {
+      cwd,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"]
+    });
   } catch {
     return "";
   }
@@ -50401,7 +50405,23 @@ var defaultRollback = {
   strategy: "individual",
   dangerouslyAllowUnpublish: false
 };
-var defaultReleasePr = {
+var defaultRelease = {
+  versioning: {
+    mode: "independent",
+    fixed: [],
+    linked: [],
+    updateInternalDependencies: "patch"
+  },
+  changesets: {
+    directory: ".pubm/changesets"
+  },
+  commits: {
+    format: "conventional",
+    types: {}
+  },
+  changelog: true
+};
+var defaultReleasePullRequest = {
   enabled: false,
   branchTemplate: "pubm/release/{scopeSlug}",
   titleTemplate: "chore(release): {scope} {version}",
@@ -50411,18 +50431,13 @@ var defaultReleasePr = {
     minor: "release:minor",
     major: "release:major",
     prerelease: "release:prerelease"
-  }
+  },
+  unversionedChanges: "warn"
 };
 var defaultConfig = {
-  versioning: "independent",
   branch: "main",
-  changelog: true,
-  changelogFormat: "default",
   commit: false,
   access: "public",
-  fixed: [],
-  linked: [],
-  updateInternalDependencies: "patch",
   ignore: [],
   snapshotTemplate: "{tag}-{timestamp}",
   tag: "latest",
@@ -50431,8 +50446,7 @@ var defaultConfig = {
   releaseDraft: true,
   releaseNotes: true,
   lockfileSync: "optional",
-  versionSources: "all",
-  conventionalCommits: { types: {} },
+  release: defaultRelease,
   registryQualifiedTags: false
 };
 async function resolveConfig(config, cwd) {
@@ -50505,6 +50519,7 @@ async function resolveConfig(config, cwd) {
       };
     });
   }
+  const release = resolveReleaseConfig(config.release);
   return {
     ...defaultConfig,
     ...config,
@@ -50517,30 +50532,54 @@ async function resolveConfig(config, cwd) {
     },
     snapshotTemplate: config.snapshotTemplate ?? defaultConfig.snapshotTemplate,
     ecosystems: config.ecosystems ?? {},
-    releasePr: resolveReleasePrConfig(config.releasePr, {
-      versioning: config.versioning ?? defaultConfig.versioning,
-      fixed: config.fixed ?? defaultConfig.fixed,
-      linked: config.linked ?? defaultConfig.linked
-    }),
+    release,
+    versioning: release.versioning.mode,
+    fixed: release.versioning.fixed,
+    linked: release.versioning.linked,
+    updateInternalDependencies: release.versioning.updateInternalDependencies,
+    changelog: release.changelog,
     plugins: config.plugins ?? [],
-    versionSources: config.versionSources ?? defaultConfig.versionSources,
-    conventionalCommits: {
-      types: config.conventionalCommits?.types ?? {}
-    },
     ...discoveryEmpty ? { discoveryEmpty } : {}
   };
 }
-function resolveReleasePrConfig(config, inherited) {
+function resolveReleaseConfig(config) {
+  const versioning = {
+    ...defaultRelease.versioning,
+    ...config?.versioning,
+    fixed: config?.versioning?.fixed?.map((group) => [...group]) ?? defaultRelease.versioning.fixed,
+    linked: config?.versioning?.linked?.map((group) => [...group]) ?? defaultRelease.versioning.linked
+  };
+  return {
+    versioning,
+    changesets: {
+      ...defaultRelease.changesets,
+      ...config?.changesets
+    },
+    commits: {
+      ...defaultRelease.commits,
+      ...config?.commits,
+      types: config?.commits?.types ?? defaultRelease.commits.types
+    },
+    changelog: config?.changelog ?? defaultRelease.changelog,
+    pullRequest: resolveReleasePullRequestConfig(config?.pullRequest, {
+      versioning: versioning.mode,
+      fixed: versioning.fixed,
+      linked: versioning.linked
+    })
+  };
+}
+function resolveReleasePullRequestConfig(config, inherited) {
   const fixed = config?.fixed ?? inherited.fixed;
   const linked = config?.linked ?? inherited.linked;
+  const grouping = config?.grouping && config.grouping !== "inherit" ? config.grouping : inherited.versioning;
   return {
-    ...defaultReleasePr,
+    ...defaultReleasePullRequest,
     ...config,
+    grouping,
     bumpLabels: {
-      ...defaultReleasePr.bumpLabels,
+      ...defaultReleasePullRequest.bumpLabels,
       ...config?.bumpLabels
     },
-    grouping: config?.grouping ?? inherited.versioning,
     fixed: fixed.map((group) => [...group]),
     linked: linked.map((group) => [...group])
   };
@@ -52045,13 +52084,16 @@ init_runner();
 // ../pubm-issue-34-release-workflow/packages/core/src/index.ts
 init_catalog();
 
+// ../pubm-issue-34-release-workflow/packages/core/src/version-source/changeset-source.ts
+init_package_key();
+
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/required-missing-information.ts
-var import_semver11 = __toESM(require_semver2(), 1);
+var import_semver12 = __toESM(require_semver2(), 1);
 init_i18n();
 init_catalog();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
-var import_semver9 = __toESM(require_semver2(), 1);
+var import_semver10 = __toESM(require_semver2(), 1);
 init_i18n();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/utils/filter-config.ts
@@ -52061,41 +52103,41 @@ init_package_key();
 init_package_key();
 init_ui();
 
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/display.ts
-init_dist();
+// ../pubm-issue-34-release-workflow/packages/core/src/version-source/plan.ts
+var import_micromatch6 = __toESM(require_micromatch(), 1);
 var import_semver6 = __toESM(require_semver2(), 1);
-init_i18n();
-init_package_key();
-init_ui();
-var { SemVer: SemVer3 } = import_semver6.default;
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/fixed-mode.ts
-init_dist();
-var import_semver8 = __toESM(require_semver2(), 1);
-init_i18n();
 init_package_key();
 
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/version-choices.ts
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/display.ts
 init_dist();
 var import_semver7 = __toESM(require_semver2(), 1);
 init_i18n();
+init_package_key();
+init_ui();
+var { SemVer: SemVer3 } = import_semver7.default;
 
-// ../pubm-issue-34-release-workflow/packages/core/src/version-source/changeset-source.ts
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/fixed-mode.ts
+init_dist();
+var import_semver9 = __toESM(require_semver2(), 1);
+init_i18n();
 init_package_key();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/version-choices.ts
-var { RELEASE_TYPES, SemVer: SemVer4 } = import_semver7.default;
+init_dist();
+var import_semver8 = __toESM(require_semver2(), 1);
+init_i18n();
+var { RELEASE_TYPES, SemVer: SemVer4 } = import_semver8.default;
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
-var { SemVer: SemVer5 } = import_semver9.default;
+var { SemVer: SemVer5 } = import_semver10.default;
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/single-package.ts
-var import_semver10 = __toESM(require_semver2(), 1);
+var import_semver11 = __toESM(require_semver2(), 1);
 init_i18n();
 init_package_key();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/required-missing-information.ts
-var { prerelease: prerelease3 } = import_semver11.default;
+var { prerelease: prerelease3 } = import_semver12.default;
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/snapshot-runner.ts
 init_error4();
@@ -52113,9 +52155,9 @@ init_exec();
 // ../pubm-issue-34-release-workflow/node_modules/.bun/update-kit@0.1.12/node_modules/update-kit/dist/index.mjs
 import { execFile as execFile2 } from "child_process";
 import { promisify } from "util";
-var import_semver12 = __toESM(require_semver2(), 1);
 var import_semver13 = __toESM(require_semver2(), 1);
 var import_semver14 = __toESM(require_semver2(), 1);
+var import_semver15 = __toESM(require_semver2(), 1);
 import { execFile as execFile22 } from "child_process";
 import { promisify as promisify2 } from "util";
 import { execFile as execFile3 } from "child_process";
@@ -52136,12 +52178,7 @@ init_rollback();
 init_ui();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/validate/extraneous-files.ts
-var import_micromatch6 = __toESM(require_micromatch(), 1);
-
-// ../pubm-issue-34-release-workflow/packages/core/src/version-source/plan.ts
 var import_micromatch7 = __toESM(require_micromatch(), 1);
-var import_semver15 = __toESM(require_semver2(), 1);
-init_package_key();
 
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-pr.ts
 init_catalog2();
@@ -52257,14 +52294,14 @@ function packageKeysForPlan(ctx, plan) {
   return [...plan.packages.keys()];
 }
 function releasePrGrouping(ctx) {
-  return releasePrConfigFor(ctx).grouping ?? ctx.config.versioning;
+  return releasePrConfigFor(ctx).grouping;
 }
 function releasePrConfigFor(ctx) {
-  const releasePr = ctx.config.releasePr;
+  const releasePr = ctx.config.release.pullRequest;
   return {
-    grouping: releasePr?.grouping,
-    fixed: releasePr?.fixed ?? ctx.config.fixed,
-    linked: releasePr?.linked ?? ctx.config.linked
+    grouping: releasePr.grouping,
+    fixed: releasePr.fixed,
+    linked: releasePr.linked
   };
 }
 function resolveConfiguredGroup(ctx, group) {
@@ -52557,15 +52594,16 @@ async function run2() {
   const octokit = getOctokit(token);
   const repo = repoContext();
   const ctx = await loadPubmContext({ workingDirectory, baseBranch });
+  const pullRequest = ctx.config.release.pullRequest;
   const associatedPrs = await pullRequestsForCommit(octokit, repo, afterSha);
   const releasePrs = [];
   for (const associatedPr of associatedPrs) {
     const fullPr = await getPullRequest(octokit, repo, associatedPr.number);
     if (isMergedReleasePullRequest(fullPr, {
       baseBranch,
-      label: ctx.config.releasePr.label,
+      label: pullRequest.label,
       branchPrefix: branchPrefixFromTemplate(
-        ctx.config.releasePr.branchTemplate
+        pullRequest.branchTemplate
       )
     })) {
       releasePrs.push(fullPr);

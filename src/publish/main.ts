@@ -44,6 +44,7 @@ async function run(): Promise<void> {
 	const octokit = github.getOctokit(token);
 	const repo = repoContext();
 	const ctx = await loadPubmContext({ workingDirectory, baseBranch });
+	const pullRequest = ctx.config.release.pullRequest;
 	const associatedPrs = await pullRequestsForCommit(octokit, repo, afterSha);
 	const releasePrs = [];
 	for (const associatedPr of associatedPrs) {
@@ -51,9 +52,9 @@ async function run(): Promise<void> {
 		if (
 			isMergedReleasePullRequest(fullPr, {
 				baseBranch,
-				label: ctx.config.releasePr.label,
+				label: pullRequest.label,
 				branchPrefix: branchPrefixFromTemplate(
-					ctx.config.releasePr.branchTemplate,
+					pullRequest.branchTemplate,
 				),
 			})
 		) {

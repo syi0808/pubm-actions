@@ -1077,14 +1077,14 @@ var require_util = __commonJS({
         }
         const port = url.port != null ? url.port : url.protocol === "https:" ? 443 : 80;
         let origin = url.origin != null ? url.origin : `${url.protocol || ""}//${url.hostname || ""}:${port}`;
-        let path23 = url.path != null ? url.path : `${url.pathname || ""}${url.search || ""}`;
+        let path24 = url.path != null ? url.path : `${url.pathname || ""}${url.search || ""}`;
         if (origin[origin.length - 1] === "/") {
           origin = origin.slice(0, origin.length - 1);
         }
-        if (path23 && path23[0] !== "/") {
-          path23 = `/${path23}`;
+        if (path24 && path24[0] !== "/") {
+          path24 = `/${path24}`;
         }
-        return new URL(`${origin}${path23}`);
+        return new URL(`${origin}${path24}`);
       }
       if (!isHttpOrHttpsPrefixed(url.origin || url.protocol)) {
         throw new InvalidArgumentError("Invalid URL protocol: the URL must start with `http:` or `https:`.");
@@ -1535,39 +1535,39 @@ var require_diagnostics = __commonJS({
       });
       diagnosticsChannel.channel("undici:client:sendHeaders").subscribe((evt) => {
         const {
-          request: { method, path: path23, origin }
+          request: { method, path: path24, origin }
         } = evt;
-        debuglog("sending request to %s %s/%s", method, origin, path23);
+        debuglog("sending request to %s %s/%s", method, origin, path24);
       });
       diagnosticsChannel.channel("undici:request:headers").subscribe((evt) => {
         const {
-          request: { method, path: path23, origin },
+          request: { method, path: path24, origin },
           response: { statusCode }
         } = evt;
         debuglog(
           "received response to %s %s/%s - HTTP %d",
           method,
           origin,
-          path23,
+          path24,
           statusCode
         );
       });
       diagnosticsChannel.channel("undici:request:trailers").subscribe((evt) => {
         const {
-          request: { method, path: path23, origin }
+          request: { method, path: path24, origin }
         } = evt;
-        debuglog("trailers received from %s %s/%s", method, origin, path23);
+        debuglog("trailers received from %s %s/%s", method, origin, path24);
       });
       diagnosticsChannel.channel("undici:request:error").subscribe((evt) => {
         const {
-          request: { method, path: path23, origin },
+          request: { method, path: path24, origin },
           error: error3
         } = evt;
         debuglog(
           "request to %s %s/%s errored - %s",
           method,
           origin,
-          path23,
+          path24,
           error3.message
         );
       });
@@ -1616,9 +1616,9 @@ var require_diagnostics = __commonJS({
         });
         diagnosticsChannel.channel("undici:client:sendHeaders").subscribe((evt) => {
           const {
-            request: { method, path: path23, origin }
+            request: { method, path: path24, origin }
           } = evt;
-          debuglog("sending request to %s %s/%s", method, origin, path23);
+          debuglog("sending request to %s %s/%s", method, origin, path24);
         });
       }
       diagnosticsChannel.channel("undici:websocket:open").subscribe((evt) => {
@@ -1681,7 +1681,7 @@ var require_request = __commonJS({
     var kHandler = /* @__PURE__ */ Symbol("handler");
     var Request = class {
       constructor(origin, {
-        path: path23,
+        path: path24,
         method,
         body,
         headers,
@@ -1696,11 +1696,11 @@ var require_request = __commonJS({
         expectContinue,
         servername
       }, handler2) {
-        if (typeof path23 !== "string") {
+        if (typeof path24 !== "string") {
           throw new InvalidArgumentError("path must be a string");
-        } else if (path23[0] !== "/" && !(path23.startsWith("http://") || path23.startsWith("https://")) && method !== "CONNECT") {
+        } else if (path24[0] !== "/" && !(path24.startsWith("http://") || path24.startsWith("https://")) && method !== "CONNECT") {
           throw new InvalidArgumentError("path must be an absolute URL or start with a slash");
-        } else if (invalidPathRegex.test(path23)) {
+        } else if (invalidPathRegex.test(path24)) {
           throw new InvalidArgumentError("invalid request path");
         }
         if (typeof method !== "string") {
@@ -1766,7 +1766,7 @@ var require_request = __commonJS({
         this.completed = false;
         this.aborted = false;
         this.upgrade = upgrade || null;
-        this.path = query ? buildURL(path23, query) : path23;
+        this.path = query ? buildURL(path24, query) : path24;
         this.origin = origin;
         this.idempotent = idempotent == null ? method === "HEAD" || method === "GET" : idempotent;
         this.blocking = blocking == null ? false : blocking;
@@ -6285,7 +6285,7 @@ var require_client_h1 = __commonJS({
       return method !== "GET" && method !== "HEAD" && method !== "OPTIONS" && method !== "TRACE" && method !== "CONNECT";
     }
     function writeH1(client, request2) {
-      const { method, path: path23, host, upgrade, blocking, reset } = request2;
+      const { method, path: path24, host, upgrade, blocking, reset } = request2;
       let { body, headers, contentLength } = request2;
       const expectsPayload = method === "PUT" || method === "POST" || method === "PATCH" || method === "QUERY" || method === "PROPFIND" || method === "PROPPATCH";
       if (util.isFormDataLike(body)) {
@@ -6351,7 +6351,7 @@ var require_client_h1 = __commonJS({
       if (blocking) {
         socket[kBlocking] = true;
       }
-      let header = `${method} ${path23} HTTP/1.1\r
+      let header = `${method} ${path24} HTTP/1.1\r
 `;
       if (typeof host === "string") {
         header += `host: ${host}\r
@@ -6877,7 +6877,7 @@ var require_client_h2 = __commonJS({
     }
     function writeH2(client, request2) {
       const session = client[kHTTP2Session];
-      const { method, path: path23, host, upgrade, expectContinue, signal, headers: reqHeaders } = request2;
+      const { method, path: path24, host, upgrade, expectContinue, signal, headers: reqHeaders } = request2;
       let { body } = request2;
       if (upgrade) {
         util.errorRequest(client, request2, new Error("Upgrade not supported for H2"));
@@ -6944,7 +6944,7 @@ var require_client_h2 = __commonJS({
         });
         return true;
       }
-      headers[HTTP2_HEADER_PATH] = path23;
+      headers[HTTP2_HEADER_PATH] = path24;
       headers[HTTP2_HEADER_SCHEME] = "https";
       const expectsPayload = method === "PUT" || method === "POST" || method === "PATCH";
       if (body && typeof body.read === "function") {
@@ -7297,9 +7297,9 @@ var require_redirect_handler = __commonJS({
           return this.handler.onHeaders(statusCode, headers, resume, statusText);
         }
         const { origin, pathname, search } = util.parseURL(new URL(this.location, this.opts.origin && new URL(this.opts.path, this.opts.origin)));
-        const path23 = search ? `${pathname}${search}` : pathname;
+        const path24 = search ? `${pathname}${search}` : pathname;
         this.opts.headers = cleanRequestHeaders(this.opts.headers, statusCode === 303, this.opts.origin !== origin);
-        this.opts.path = path23;
+        this.opts.path = path24;
         this.opts.origin = origin;
         this.opts.maxRedirections = 0;
         this.opts.query = null;
@@ -8533,10 +8533,10 @@ var require_proxy_agent = __commonJS({
         };
         const {
           origin,
-          path: path23 = "/",
+          path: path24 = "/",
           headers = {}
         } = opts;
-        opts.path = origin + path23;
+        opts.path = origin + path24;
         if (!("host" in headers) && !("Host" in headers)) {
           const { host } = new URL2(origin);
           headers.host = host;
@@ -10457,20 +10457,20 @@ var require_mock_utils = __commonJS({
       }
       return true;
     }
-    function safeUrl(path23) {
-      if (typeof path23 !== "string") {
-        return path23;
+    function safeUrl(path24) {
+      if (typeof path24 !== "string") {
+        return path24;
       }
-      const pathSegments = path23.split("?");
+      const pathSegments = path24.split("?");
       if (pathSegments.length !== 2) {
-        return path23;
+        return path24;
       }
       const qp = new URLSearchParams(pathSegments.pop());
       qp.sort();
       return [...pathSegments, qp.toString()].join("?");
     }
-    function matchKey(mockDispatch2, { path: path23, method, body, headers }) {
-      const pathMatch = matchValue(mockDispatch2.path, path23);
+    function matchKey(mockDispatch2, { path: path24, method, body, headers }) {
+      const pathMatch = matchValue(mockDispatch2.path, path24);
       const methodMatch = matchValue(mockDispatch2.method, method);
       const bodyMatch = typeof mockDispatch2.body !== "undefined" ? matchValue(mockDispatch2.body, body) : true;
       const headersMatch = matchHeaders(mockDispatch2, headers);
@@ -10492,7 +10492,7 @@ var require_mock_utils = __commonJS({
     function getMockDispatch(mockDispatches, key) {
       const basePath = key.query ? buildURL(key.path, key.query) : key.path;
       const resolvedPath = typeof basePath === "string" ? safeUrl(basePath) : basePath;
-      let matchedMockDispatches = mockDispatches.filter(({ consumed }) => !consumed).filter(({ path: path23 }) => matchValue(safeUrl(path23), resolvedPath));
+      let matchedMockDispatches = mockDispatches.filter(({ consumed }) => !consumed).filter(({ path: path24 }) => matchValue(safeUrl(path24), resolvedPath));
       if (matchedMockDispatches.length === 0) {
         throw new MockNotMatchedError(`Mock dispatch not matched for path '${resolvedPath}'`);
       }
@@ -10530,9 +10530,9 @@ var require_mock_utils = __commonJS({
       }
     }
     function buildKey(opts) {
-      const { path: path23, method, body, headers, query } = opts;
+      const { path: path24, method, body, headers, query } = opts;
       return {
-        path: path23,
+        path: path24,
         method,
         body,
         headers,
@@ -10995,10 +10995,10 @@ var require_pending_interceptors_formatter = __commonJS({
       }
       format(pendingInterceptors) {
         const withPrettyHeaders = pendingInterceptors.map(
-          ({ method, path: path23, data: { statusCode }, persist, times, timesInvoked, origin }) => ({
+          ({ method, path: path24, data: { statusCode }, persist, times, timesInvoked, origin }) => ({
             Method: method,
             Origin: origin,
-            Path: path23,
+            Path: path24,
             "Status code": statusCode,
             Persistent: persist ? PERSISTENT : NOT_PERSISTENT,
             Invocations: timesInvoked,
@@ -15879,9 +15879,9 @@ var require_util6 = __commonJS({
         }
       }
     }
-    function validateCookiePath(path23) {
-      for (let i = 0; i < path23.length; ++i) {
-        const code = path23.charCodeAt(i);
+    function validateCookiePath(path24) {
+      for (let i = 0; i < path24.length; ++i) {
+        const code = path24.charCodeAt(i);
         if (code < 32 || // exclude CTLs (0-31)
         code === 127 || // DEL
         code === 59) {
@@ -18521,11 +18521,11 @@ var require_undici = __commonJS({
           if (typeof opts.path !== "string") {
             throw new InvalidArgumentError("invalid opts.path");
           }
-          let path23 = opts.path;
+          let path24 = opts.path;
           if (!opts.path.startsWith("/")) {
-            path23 = `/${path23}`;
+            path24 = `/${path24}`;
           }
-          url = new URL(util.parseOrigin(url).origin + path23);
+          url = new URL(util.parseOrigin(url).origin + path24);
         } else {
           if (!opts) {
             opts = typeof url === "object" ? url : {};
@@ -23671,9 +23671,9 @@ var init_utils = __esm({
         console.error(error3);
       }
     };
-    defaultWarnHandler = (warning) => {
+    defaultWarnHandler = (warning2) => {
       if (process.env.NODE_ENV !== "production") {
-        console.warn(warning);
+        console.warn(warning2);
       }
     };
     DEFAULT_INTL_CONFIG = {
@@ -31304,8 +31304,8 @@ var init_descriptor = __esm({
   "../pubm-issue-34-release-workflow/packages/core/src/ecosystem/descriptor.ts"() {
     "use strict";
     EcosystemDescriptor = class {
-      constructor(path23) {
-        this.path = path23;
+      constructor(path24) {
+        this.path = path24;
       }
     };
   }
@@ -31318,8 +31318,8 @@ var init_rust_descriptor = __esm({
     "use strict";
     init_descriptor();
     RustEcosystemDescriptor = class extends EcosystemDescriptor {
-      constructor(path23, cratesName) {
-        super(path23);
+      constructor(path24, cratesName) {
+        super(path24);
         this.cratesName = cratesName;
       }
       get displayName() {
@@ -33181,8 +33181,8 @@ var init_js_descriptor = __esm({
     "use strict";
     init_descriptor();
     JsEcosystemDescriptor = class extends EcosystemDescriptor {
-      constructor(path23, npmName, jsrName) {
-        super(path23);
+      constructor(path24, npmName, jsrName) {
+        super(path24);
         this.npmName = npmName;
         this.jsrName = jsrName;
       }
@@ -33424,14 +33424,14 @@ var init_catalog2 = __esm({
       label: "Rust",
       defaultRegistries: ["crates"],
       ecosystemClass: RustEcosystem,
-      detect: (path23) => RustEcosystem.detect(path23)
+      detect: (path24) => RustEcosystem.detect(path24)
     });
     ecosystemCatalog.register({
       key: "js",
       label: "JavaScript",
       defaultRegistries: ["npm", "jsr"],
       ecosystemClass: JsEcosystem,
-      detect: (path23) => JsEcosystem.detect(path23)
+      detect: (path24) => JsEcosystem.detect(path24)
     });
   }
 });
@@ -34667,7 +34667,7 @@ var require_braces = __commonJS({
 var require_constants8 = __commonJS({
   "../pubm-issue-34-release-workflow/node_modules/.bun/picomatch@2.3.1/node_modules/picomatch/lib/constants.js"(exports, module) {
     "use strict";
-    var path23 = __require("path");
+    var path24 = __require("path");
     var WIN_SLASH = "\\\\/";
     var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
     var DOT_LITERAL = "\\.";
@@ -34837,7 +34837,7 @@ var require_constants8 = __commonJS({
       /* | */
       CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
       /* \uFEFF */
-      SEP: path23.sep,
+      SEP: path24.sep,
       /**
        * Create EXTGLOB_CHARS
        */
@@ -34864,7 +34864,7 @@ var require_constants8 = __commonJS({
 var require_utils3 = __commonJS({
   "../pubm-issue-34-release-workflow/node_modules/.bun/picomatch@2.3.1/node_modules/picomatch/lib/utils.js"(exports) {
     "use strict";
-    var path23 = __require("path");
+    var path24 = __require("path");
     var win32 = process.platform === "win32";
     var {
       REGEX_BACKSLASH,
@@ -34893,7 +34893,7 @@ var require_utils3 = __commonJS({
       if (options && typeof options.windows === "boolean") {
         return options.windows;
       }
-      return win32 === true || path23.sep === "\\";
+      return win32 === true || path24.sep === "\\";
     };
     exports.escapeLast = (input, char, lastIdx) => {
       const idx = input.lastIndexOf(char, lastIdx);
@@ -36028,7 +36028,7 @@ var require_parse4 = __commonJS({
 var require_picomatch = __commonJS({
   "../pubm-issue-34-release-workflow/node_modules/.bun/picomatch@2.3.1/node_modules/picomatch/lib/picomatch.js"(exports, module) {
     "use strict";
-    var path23 = __require("path");
+    var path24 = __require("path");
     var scan = require_scan();
     var parse7 = require_parse4();
     var utils = require_utils3();
@@ -36113,7 +36113,7 @@ var require_picomatch = __commonJS({
     };
     picomatch.matchBase = (input, glob, options, posix = utils.isWindows(options)) => {
       const regex = glob instanceof RegExp ? glob : picomatch.makeRe(glob, options);
-      return regex.test(path23.basename(input));
+      return regex.test(path24.basename(input));
     };
     picomatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
     picomatch.parse = (pattern, options) => {
@@ -36411,17 +36411,17 @@ var require_visit = __commonJS({
     visit2.BREAK = BREAK;
     visit2.SKIP = SKIP;
     visit2.REMOVE = REMOVE;
-    function visit_(key, node, visitor, path23) {
-      const ctrl = callVisitor(key, node, visitor, path23);
+    function visit_(key, node, visitor, path24) {
+      const ctrl = callVisitor(key, node, visitor, path24);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path23, ctrl);
-        return visit_(key, ctrl, visitor, path23);
+        replaceNode(key, path24, ctrl);
+        return visit_(key, ctrl, visitor, path24);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path23 = Object.freeze(path23.concat(node));
+          path24 = Object.freeze(path24.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = visit_(i, node.items[i], visitor, path23);
+            const ci = visit_(i, node.items[i], visitor, path24);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -36432,13 +36432,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path23 = Object.freeze(path23.concat(node));
-          const ck = visit_("key", node.key, visitor, path23);
+          path24 = Object.freeze(path24.concat(node));
+          const ck = visit_("key", node.key, visitor, path24);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = visit_("value", node.value, visitor, path23);
+          const cv = visit_("value", node.value, visitor, path24);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -36459,17 +36459,17 @@ var require_visit = __commonJS({
     visitAsync.BREAK = BREAK;
     visitAsync.SKIP = SKIP;
     visitAsync.REMOVE = REMOVE;
-    async function visitAsync_(key, node, visitor, path23) {
-      const ctrl = await callVisitor(key, node, visitor, path23);
+    async function visitAsync_(key, node, visitor, path24) {
+      const ctrl = await callVisitor(key, node, visitor, path24);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path23, ctrl);
-        return visitAsync_(key, ctrl, visitor, path23);
+        replaceNode(key, path24, ctrl);
+        return visitAsync_(key, ctrl, visitor, path24);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path23 = Object.freeze(path23.concat(node));
+          path24 = Object.freeze(path24.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = await visitAsync_(i, node.items[i], visitor, path23);
+            const ci = await visitAsync_(i, node.items[i], visitor, path24);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -36480,13 +36480,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path23 = Object.freeze(path23.concat(node));
-          const ck = await visitAsync_("key", node.key, visitor, path23);
+          path24 = Object.freeze(path24.concat(node));
+          const ck = await visitAsync_("key", node.key, visitor, path24);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = await visitAsync_("value", node.value, visitor, path23);
+          const cv = await visitAsync_("value", node.value, visitor, path24);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -36513,23 +36513,23 @@ var require_visit = __commonJS({
       }
       return visitor;
     }
-    function callVisitor(key, node, visitor, path23) {
+    function callVisitor(key, node, visitor, path24) {
       if (typeof visitor === "function")
-        return visitor(key, node, path23);
+        return visitor(key, node, path24);
       if (identity.isMap(node))
-        return visitor.Map?.(key, node, path23);
+        return visitor.Map?.(key, node, path24);
       if (identity.isSeq(node))
-        return visitor.Seq?.(key, node, path23);
+        return visitor.Seq?.(key, node, path24);
       if (identity.isPair(node))
-        return visitor.Pair?.(key, node, path23);
+        return visitor.Pair?.(key, node, path24);
       if (identity.isScalar(node))
-        return visitor.Scalar?.(key, node, path23);
+        return visitor.Scalar?.(key, node, path24);
       if (identity.isAlias(node))
-        return visitor.Alias?.(key, node, path23);
+        return visitor.Alias?.(key, node, path24);
       return void 0;
     }
-    function replaceNode(key, path23, node) {
-      const parent = path23[path23.length - 1];
+    function replaceNode(key, path24, node) {
+      const parent = path24[path24.length - 1];
       if (identity.isCollection(parent)) {
         parent.items[key] = node;
       } else if (identity.isPair(parent)) {
@@ -37137,10 +37137,10 @@ var require_Collection = __commonJS({
     var createNode = require_createNode();
     var identity = require_identity();
     var Node = require_Node();
-    function collectionFromPath(schema, path23, value) {
+    function collectionFromPath(schema, path24, value) {
       let v = value;
-      for (let i = path23.length - 1; i >= 0; --i) {
-        const k2 = path23[i];
+      for (let i = path24.length - 1; i >= 0; --i) {
+        const k2 = path24[i];
         if (typeof k2 === "number" && Number.isInteger(k2) && k2 >= 0) {
           const a2 = [];
           a2[k2] = v;
@@ -37159,7 +37159,7 @@ var require_Collection = __commonJS({
         sourceObjects: /* @__PURE__ */ new Map()
       });
     }
-    var isEmptyPath = (path23) => path23 == null || typeof path23 === "object" && !!path23[Symbol.iterator]().next().done;
+    var isEmptyPath = (path24) => path24 == null || typeof path24 === "object" && !!path24[Symbol.iterator]().next().done;
     var Collection2 = class extends Node.NodeBase {
       constructor(type, schema) {
         super(type);
@@ -37189,11 +37189,11 @@ var require_Collection = __commonJS({
        * be a Pair instance or a `{ key, value }` object, which may not have a key
        * that already exists in the map.
        */
-      addIn(path23, value) {
-        if (isEmptyPath(path23))
+      addIn(path24, value) {
+        if (isEmptyPath(path24))
           this.add(value);
         else {
-          const [key, ...rest] = path23;
+          const [key, ...rest] = path24;
           const node = this.get(key, true);
           if (identity.isCollection(node))
             node.addIn(rest, value);
@@ -37207,8 +37207,8 @@ var require_Collection = __commonJS({
        * Removes a value from the collection.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path23) {
-        const [key, ...rest] = path23;
+      deleteIn(path24) {
+        const [key, ...rest] = path24;
         if (rest.length === 0)
           return this.delete(key);
         const node = this.get(key, true);
@@ -37222,8 +37222,8 @@ var require_Collection = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path23, keepScalar) {
-        const [key, ...rest] = path23;
+      getIn(path24, keepScalar) {
+        const [key, ...rest] = path24;
         const node = this.get(key, true);
         if (rest.length === 0)
           return !keepScalar && identity.isScalar(node) ? node.value : node;
@@ -37241,8 +37241,8 @@ var require_Collection = __commonJS({
       /**
        * Checks if the collection includes a value with the key `key`.
        */
-      hasIn(path23) {
-        const [key, ...rest] = path23;
+      hasIn(path24) {
+        const [key, ...rest] = path24;
         if (rest.length === 0)
           return this.has(key);
         const node = this.get(key, true);
@@ -37252,8 +37252,8 @@ var require_Collection = __commonJS({
        * Sets a value in this collection. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path23, value) {
-        const [key, ...rest] = path23;
+      setIn(path24, value) {
+        const [key, ...rest] = path24;
         if (rest.length === 0) {
           this.set(key, value);
         } else {
@@ -37974,12 +37974,12 @@ var require_log = __commonJS({
       if (logLevel === "debug")
         console.log(...messages);
     }
-    function warn2(logLevel, warning) {
+    function warn2(logLevel, warning2) {
       if (logLevel === "debug" || logLevel === "warn") {
         if (typeof node_process.emitWarning === "function")
-          node_process.emitWarning(warning);
+          node_process.emitWarning(warning2);
         else
-          console.warn(warning);
+          console.warn(warning2);
       }
     }
     exports.debug = debug3;
@@ -39757,9 +39757,9 @@ var require_Document = __commonJS({
           this.contents.add(value);
       }
       /** Adds a value to the document. */
-      addIn(path23, value) {
+      addIn(path24, value) {
         if (assertCollection(this.contents))
-          this.contents.addIn(path23, value);
+          this.contents.addIn(path24, value);
       }
       /**
        * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
@@ -39834,14 +39834,14 @@ var require_Document = __commonJS({
        * Removes a value from the document.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path23) {
-        if (Collection2.isEmptyPath(path23)) {
+      deleteIn(path24) {
+        if (Collection2.isEmptyPath(path24)) {
           if (this.contents == null)
             return false;
           this.contents = null;
           return true;
         }
-        return assertCollection(this.contents) ? this.contents.deleteIn(path23) : false;
+        return assertCollection(this.contents) ? this.contents.deleteIn(path24) : false;
       }
       /**
        * Returns item at `key`, or `undefined` if not found. By default unwraps
@@ -39856,10 +39856,10 @@ var require_Document = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path23, keepScalar) {
-        if (Collection2.isEmptyPath(path23))
+      getIn(path24, keepScalar) {
+        if (Collection2.isEmptyPath(path24))
           return !keepScalar && identity.isScalar(this.contents) ? this.contents.value : this.contents;
-        return identity.isCollection(this.contents) ? this.contents.getIn(path23, keepScalar) : void 0;
+        return identity.isCollection(this.contents) ? this.contents.getIn(path24, keepScalar) : void 0;
       }
       /**
        * Checks if the document includes a value with the key `key`.
@@ -39870,10 +39870,10 @@ var require_Document = __commonJS({
       /**
        * Checks if the document includes a value at `path`.
        */
-      hasIn(path23) {
-        if (Collection2.isEmptyPath(path23))
+      hasIn(path24) {
+        if (Collection2.isEmptyPath(path24))
           return this.contents !== void 0;
-        return identity.isCollection(this.contents) ? this.contents.hasIn(path23) : false;
+        return identity.isCollection(this.contents) ? this.contents.hasIn(path24) : false;
       }
       /**
        * Sets a value in this document. For `!!set`, `value` needs to be a
@@ -39890,13 +39890,13 @@ var require_Document = __commonJS({
        * Sets a value in this document. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path23, value) {
-        if (Collection2.isEmptyPath(path23)) {
+      setIn(path24, value) {
+        if (Collection2.isEmptyPath(path24)) {
           this.contents = value;
         } else if (this.contents == null) {
-          this.contents = Collection2.collectionFromPath(this.schema, Array.from(path23), value);
+          this.contents = Collection2.collectionFromPath(this.schema, Array.from(path24), value);
         } else if (assertCollection(this.contents)) {
-          this.contents.setIn(path23, value);
+          this.contents.setIn(path24, value);
         }
       }
       /**
@@ -41432,9 +41432,9 @@ var require_composer = __commonJS({
         this.prelude = [];
         this.errors = [];
         this.warnings = [];
-        this.onError = (source, code, message, warning) => {
+        this.onError = (source, code, message, warning2) => {
           const pos = getErrorPos(source);
-          if (warning)
+          if (warning2)
             this.warnings.push(new errors.YAMLWarning(pos, code, message));
           else
             this.errors.push(new errors.YAMLParseError(pos, code, message));
@@ -41505,10 +41505,10 @@ ${cb}` : comment;
           console.dir(token, { depth: null });
         switch (token.type) {
           case "directive":
-            this.directives.add(token.source, (offset, message, warning) => {
+            this.directives.add(token.source, (offset, message, warning2) => {
               const pos = getErrorPos(token);
               pos[0] += offset;
-              this.onError(pos, "BAD_DIRECTIVE", message, warning);
+              this.onError(pos, "BAD_DIRECTIVE", message, warning2);
             });
             this.prelude.push(token.source);
             this.atDirectives = true;
@@ -41848,9 +41848,9 @@ var require_cst_visit = __commonJS({
     visit2.BREAK = BREAK;
     visit2.SKIP = SKIP;
     visit2.REMOVE = REMOVE;
-    visit2.itemAtPath = (cst, path23) => {
+    visit2.itemAtPath = (cst, path24) => {
       let item = cst;
-      for (const [field, index] of path23) {
+      for (const [field, index] of path24) {
         const tok = item?.[field];
         if (tok && "items" in tok) {
           item = tok.items[index];
@@ -41859,23 +41859,23 @@ var require_cst_visit = __commonJS({
       }
       return item;
     };
-    visit2.parentCollection = (cst, path23) => {
-      const parent = visit2.itemAtPath(cst, path23.slice(0, -1));
-      const field = path23[path23.length - 1][0];
+    visit2.parentCollection = (cst, path24) => {
+      const parent = visit2.itemAtPath(cst, path24.slice(0, -1));
+      const field = path24[path24.length - 1][0];
       const coll = parent?.[field];
       if (coll && "items" in coll)
         return coll;
       throw new Error("Parent collection not found");
     };
-    function _visit(path23, item, visitor) {
-      let ctrl = visitor(item, path23);
+    function _visit(path24, item, visitor) {
+      let ctrl = visitor(item, path24);
       if (typeof ctrl === "symbol")
         return ctrl;
       for (const field of ["key", "value"]) {
         const token = item[field];
         if (token && "items" in token) {
           for (let i = 0; i < token.items.length; ++i) {
-            const ci = _visit(Object.freeze(path23.concat([[field, i]])), token.items[i], visitor);
+            const ci = _visit(Object.freeze(path24.concat([[field, i]])), token.items[i], visitor);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -41886,10 +41886,10 @@ var require_cst_visit = __commonJS({
             }
           }
           if (typeof ctrl === "function" && field === "key")
-            ctrl = ctrl(item, path23);
+            ctrl = ctrl(item, path24);
         }
       }
-      return typeof ctrl === "function" ? ctrl(item, path23) : ctrl;
+      return typeof ctrl === "function" ? ctrl(item, path24) : ctrl;
     }
     exports.visit = visit2;
   }
@@ -43533,7 +43533,7 @@ var require_public_api = __commonJS({
       const doc = parseDocument(src, options);
       if (!doc)
         return null;
-      doc.warnings.forEach((warning) => log.warn(doc.options.logLevel, warning));
+      doc.warnings.forEach((warning2) => log.warn(doc.options.logLevel, warning2));
       if (doc.errors.length > 0) {
         if (doc.options.logLevel !== "silent")
           throw doc.errors[0];
@@ -44111,6 +44111,9 @@ function setFailed(message) {
 function error(message, properties = {}) {
   issueCommand("error", toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
+function warning(message, properties = {}) {
+  issueCommand("warning", toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+}
 function info(message) {
   process.stdout.write(message + os4.EOL);
 }
@@ -44129,8 +44132,8 @@ var Context = class {
       if (existsSync2(process.env.GITHUB_EVENT_PATH)) {
         this.payload = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, { encoding: "utf8" }));
       } else {
-        const path23 = process.env.GITHUB_EVENT_PATH;
-        process.stdout.write(`GITHUB_EVENT_PATH ${path23} does not exist${EOL5}`);
+        const path24 = process.env.GITHUB_EVENT_PATH;
+        process.stdout.write(`GITHUB_EVENT_PATH ${path24} does not exist${EOL5}`);
       }
     }
     this.eventName = process.env.GITHUB_EVENT_NAME;
@@ -47975,7 +47978,7 @@ async function upsertComment(octokit, ctx, body, marker = MARKER) {
 }
 
 // src/pubm/config.ts
-import path22 from "node:path";
+import path23 from "node:path";
 
 // ../pubm-issue-34-release-workflow/packages/core/src/index.ts
 init_runner();
@@ -48981,7 +48984,10 @@ function registerManifestBackups(ctx) {
   }
 }
 function registerChangesetBackups(ctx, changesets) {
-  const changesetsDir = path9.join(ctx.cwd, ".pubm", "changesets");
+  const changesetsDir = path9.resolve(
+    ctx.cwd,
+    ctx.config.release?.changesets?.directory ?? ".pubm/changesets"
+  );
   const changesetBackups = /* @__PURE__ */ new Map();
   for (const changeset of changesets) {
     const filePath = path9.join(changesetsDir, `${changeset.id}.md`);
@@ -49320,7 +49326,11 @@ function execGit(cwd, args) {
 }
 function execGitRaw(cwd, args) {
   try {
-    return execFileSync2("git", args, { cwd, encoding: "utf-8" });
+    return execFileSync2("git", args, {
+      cwd,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"]
+    });
   } catch {
     return "";
   }
@@ -49331,8 +49341,8 @@ var HEADER_REGEX = /^(\w+)(?:\(([^)]+)\))?(!)?\s*:\s*(.+)$/;
 var FOOTER_REGEX = /^([\w-]+|BREAKING CHANGE)\s*:\s*(.+)$/;
 function parseConventionalCommit(hash, message, files = []) {
   const lines = message.split("\n");
-  const firstLine = lines[0];
-  const headerMatch = firstLine.match(HEADER_REGEX);
+  const firstLine2 = lines[0];
+  const headerMatch = firstLine2.match(HEADER_REGEX);
   if (!headerMatch) return null;
   const [, type, scope, bang, description] = headerMatch;
   let body;
@@ -49561,8 +49571,8 @@ function parseChangeset(content, fileName, resolveKey) {
 }
 
 // ../pubm-issue-34-release-workflow/packages/core/src/changeset/reader.ts
-function readChangesets(cwd = process13.cwd(), resolveKey) {
-  const changesetsDir = path13.join(cwd, ".pubm", "changesets");
+function readChangesets(cwd = process13.cwd(), resolveKey, directory = ".pubm/changesets") {
+  const changesetsDir = path13.resolve(cwd, directory);
   if (!existsSync8(changesetsDir)) {
     return [];
   }
@@ -49578,8 +49588,8 @@ function readChangesets(cwd = process13.cwd(), resolveKey) {
   }
   return changesets;
 }
-function deleteChangesetFiles(cwd, changesets) {
-  const changesetsDir = path13.join(cwd, ".pubm", "changesets");
+function deleteChangesetFiles(cwd, changesets, directory = ".pubm/changesets") {
+  const changesetsDir = path13.resolve(cwd, directory);
   for (const changeset of changesets) {
     const filePath = path13.join(changesetsDir, `${changeset.id}.md`);
     if (existsSync8(filePath)) {
@@ -49668,9 +49678,10 @@ init_package_key();
 function consumeChangesetsForScope({
   cwd,
   packageKeys,
-  resolver
+  resolver,
+  directory = ".pubm/changesets"
 }) {
-  const changesetsDir = path14.join(cwd, ".pubm", "changesets");
+  const changesetsDir = path14.resolve(cwd, directory);
   const result = {
     consumed: [],
     rewrittenFiles: [],
@@ -49763,13 +49774,15 @@ async function writeReleaseFiles(ctx, task, prepared, options) {
 }
 function writeChangesetChangelogs(ctx, plan, options) {
   const resolver = createKeyResolver(ctx.config.packages);
-  const changesets = readChangesets(ctx.cwd, resolver);
+  const changesetsDirectory = ctx.config.release?.changesets?.directory ?? ".pubm/changesets";
+  const changesets = readChangesets(ctx.cwd, resolver, changesetsDirectory);
   if (changesets.length === 0) return;
   registerChangesetBackups(ctx, changesets);
   const selectedChangesets = options.consumeChangesets === "scope" && options.packageKeys ? consumeChangesetsForScope({
     cwd: ctx.cwd,
     packageKeys: options.packageKeys,
-    resolver
+    resolver,
+    directory: changesetsDirectory
   }).consumed : changesets;
   if (plan.mode === "single") {
     const changelogPath = path15.join(ctx.cwd, "CHANGELOG.md");
@@ -49779,7 +49792,7 @@ function writeChangesetChangelogs(ctx, plan, options) {
     const changelogContent = generateChangelog(plan.version, entries);
     writeChangelogToFile(ctx.cwd, changelogContent);
     if (options.consumeChangesets !== "scope") {
-      deleteChangesetFiles(ctx.cwd, changesets);
+      deleteChangesetFiles(ctx.cwd, changesets, changesetsDirectory);
     }
     return;
   }
@@ -49796,7 +49809,7 @@ function writeChangesetChangelogs(ctx, plan, options) {
       writeChangelogToFile(ctx.cwd, changelogContent);
     }
     if (options.consumeChangesets !== "scope") {
-      deleteChangesetFiles(ctx.cwd, changesets);
+      deleteChangesetFiles(ctx.cwd, changesets, changesetsDirectory);
     }
     return;
   }
@@ -49816,7 +49829,7 @@ function writeChangesetChangelogs(ctx, plan, options) {
     );
   }
   if (options.consumeChangesets !== "scope") {
-    deleteChangesetFiles(ctx.cwd, changesets);
+    deleteChangesetFiles(ctx.cwd, changesets, changesetsDirectory);
   }
 }
 function independentChangelogDir(ctx, key) {
@@ -49881,7 +49894,23 @@ var defaultRollback = {
   strategy: "individual",
   dangerouslyAllowUnpublish: false
 };
-var defaultReleasePr = {
+var defaultRelease = {
+  versioning: {
+    mode: "independent",
+    fixed: [],
+    linked: [],
+    updateInternalDependencies: "patch"
+  },
+  changesets: {
+    directory: ".pubm/changesets"
+  },
+  commits: {
+    format: "conventional",
+    types: {}
+  },
+  changelog: true
+};
+var defaultReleasePullRequest = {
   enabled: false,
   branchTemplate: "pubm/release/{scopeSlug}",
   titleTemplate: "chore(release): {scope} {version}",
@@ -49891,18 +49920,13 @@ var defaultReleasePr = {
     minor: "release:minor",
     major: "release:major",
     prerelease: "release:prerelease"
-  }
+  },
+  unversionedChanges: "warn"
 };
 var defaultConfig = {
-  versioning: "independent",
   branch: "main",
-  changelog: true,
-  changelogFormat: "default",
   commit: false,
   access: "public",
-  fixed: [],
-  linked: [],
-  updateInternalDependencies: "patch",
   ignore: [],
   snapshotTemplate: "{tag}-{timestamp}",
   tag: "latest",
@@ -49911,8 +49935,7 @@ var defaultConfig = {
   releaseDraft: true,
   releaseNotes: true,
   lockfileSync: "optional",
-  versionSources: "all",
-  conventionalCommits: { types: {} },
+  release: defaultRelease,
   registryQualifiedTags: false
 };
 async function resolveConfig(config, cwd) {
@@ -49985,6 +50008,7 @@ async function resolveConfig(config, cwd) {
       };
     });
   }
+  const release = resolveReleaseConfig(config.release);
   return {
     ...defaultConfig,
     ...config,
@@ -49997,30 +50021,54 @@ async function resolveConfig(config, cwd) {
     },
     snapshotTemplate: config.snapshotTemplate ?? defaultConfig.snapshotTemplate,
     ecosystems: config.ecosystems ?? {},
-    releasePr: resolveReleasePrConfig(config.releasePr, {
-      versioning: config.versioning ?? defaultConfig.versioning,
-      fixed: config.fixed ?? defaultConfig.fixed,
-      linked: config.linked ?? defaultConfig.linked
-    }),
+    release,
+    versioning: release.versioning.mode,
+    fixed: release.versioning.fixed,
+    linked: release.versioning.linked,
+    updateInternalDependencies: release.versioning.updateInternalDependencies,
+    changelog: release.changelog,
     plugins: config.plugins ?? [],
-    versionSources: config.versionSources ?? defaultConfig.versionSources,
-    conventionalCommits: {
-      types: config.conventionalCommits?.types ?? {}
-    },
     ...discoveryEmpty ? { discoveryEmpty } : {}
   };
 }
-function resolveReleasePrConfig(config, inherited) {
+function resolveReleaseConfig(config) {
+  const versioning = {
+    ...defaultRelease.versioning,
+    ...config?.versioning,
+    fixed: config?.versioning?.fixed?.map((group) => [...group]) ?? defaultRelease.versioning.fixed,
+    linked: config?.versioning?.linked?.map((group) => [...group]) ?? defaultRelease.versioning.linked
+  };
+  return {
+    versioning,
+    changesets: {
+      ...defaultRelease.changesets,
+      ...config?.changesets
+    },
+    commits: {
+      ...defaultRelease.commits,
+      ...config?.commits,
+      types: config?.commits?.types ?? defaultRelease.commits.types
+    },
+    changelog: config?.changelog ?? defaultRelease.changelog,
+    pullRequest: resolveReleasePullRequestConfig(config?.pullRequest, {
+      versioning: versioning.mode,
+      fixed: versioning.fixed,
+      linked: versioning.linked
+    })
+  };
+}
+function resolveReleasePullRequestConfig(config, inherited) {
   const fixed = config?.fixed ?? inherited.fixed;
   const linked = config?.linked ?? inherited.linked;
+  const grouping = config?.grouping && config.grouping !== "inherit" ? config.grouping : inherited.versioning;
   return {
-    ...defaultReleasePr,
+    ...defaultReleasePullRequest,
     ...config,
+    grouping,
     bumpLabels: {
-      ...defaultReleasePr.bumpLabels,
+      ...defaultReleasePullRequest.bumpLabels,
       ...config?.bumpLabels
     },
-    grouping: config?.grouping ?? inherited.versioning,
     fixed: fixed.map((group) => [...group]),
     linked: linked.map((group) => [...group])
   };
@@ -50865,7 +50913,7 @@ function analyzeCommits(commits, packagePaths, typeOverrides) {
   };
   const result = /* @__PURE__ */ new Map();
   for (const commit of commits) {
-    const bumpType = resolveBumpType(commit, typeMap);
+    const bumpType = resolveCommitBumpType(commit, typeMap);
     if (!bumpType) continue;
     const packages = resolveCommitPackages(commit, packagePaths);
     if (packages.length === 0) continue;
@@ -50887,7 +50935,7 @@ function analyzeCommits(commits, packagePaths, typeOverrides) {
   }
   return result;
 }
-function resolveBumpType(commit, typeMap) {
+function resolveCommitBumpType(commit, typeMap) {
   if (commit.breaking) return "major";
   const mapped = typeMap[commit.type];
   if (mapped === false || mapped === void 0) return null;
@@ -51592,40 +51640,8 @@ init_runner();
 // ../pubm-issue-34-release-workflow/packages/core/src/index.ts
 init_catalog();
 
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/required-missing-information.ts
-var import_semver11 = __toESM(require_semver2(), 1);
-init_i18n();
-init_catalog();
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
-var import_semver9 = __toESM(require_semver2(), 1);
-init_i18n();
-
-// ../pubm-issue-34-release-workflow/packages/core/src/utils/filter-config.ts
-init_package_key();
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
-init_package_key();
-init_ui();
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/display.ts
-init_dist();
-var import_semver6 = __toESM(require_semver2(), 1);
-init_i18n();
-init_package_key();
-init_ui();
-var { SemVer: SemVer3 } = import_semver6.default;
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/fixed-mode.ts
-init_dist();
-var import_semver8 = __toESM(require_semver2(), 1);
-init_i18n();
-init_package_key();
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/version-choices.ts
-init_dist();
-var import_semver7 = __toESM(require_semver2(), 1);
-init_i18n();
+// ../pubm-issue-34-release-workflow/packages/core/src/release-analysis/analyze.ts
+import path22 from "node:path";
 
 // ../pubm-issue-34-release-workflow/packages/core/src/version-source/changeset-source.ts
 init_package_key();
@@ -51633,9 +51649,17 @@ var ChangesetSource = class {
   name = "changeset";
   changesets = [];
   cwd = "";
+  directory;
+  constructor(directory = ".pubm/changesets") {
+    this.directory = directory;
+  }
   async analyze(context3) {
     this.cwd = context3.cwd;
-    this.changesets = readChangesets(context3.cwd, context3.resolveKey);
+    this.changesets = readChangesets(
+      context3.cwd,
+      context3.resolveKey,
+      this.directory
+    );
     if (this.changesets.length === 0) return [];
     const pkgBumps = /* @__PURE__ */ new Map();
     for (const changeset of this.changesets) {
@@ -51674,7 +51698,7 @@ var ChangesetSource = class {
   }
   async consume() {
     if (this.changesets.length > 0) {
-      deleteChangesetFiles(this.cwd, this.changesets);
+      deleteChangesetFiles(this.cwd, this.changesets, this.directory);
     }
   }
 };
@@ -51764,64 +51788,143 @@ function mergeRecommendations(sourceResults) {
   }
 }
 
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/version-choices.ts
-var { RELEASE_TYPES, SemVer: SemVer4 } = import_semver7.default;
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
-var { SemVer: SemVer5 } = import_semver9.default;
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/single-package.ts
-var import_semver10 = __toESM(require_semver2(), 1);
-init_i18n();
-init_package_key();
+// ../pubm-issue-34-release-workflow/packages/core/src/release-analysis/analyze.ts
+async function analyzeReleaseChanges(ctx) {
+  const currentVersions = new Map(
+    ctx.config.packages.map((pkg) => [pkg.path, pkg.version])
+  );
+  const sourceContext = {
+    cwd: ctx.cwd,
+    packages: currentVersions,
+    resolveKey: createKeyResolver(ctx.config.packages)
+  };
+  const changesets = await new ChangesetSource(
+    ctx.config.release?.changesets?.directory ?? ".pubm/changesets"
+  ).analyze(sourceContext);
+  const commits = await new ConventionalCommitSource(
+    ctx.config.release?.commits?.types ?? {}
+  ).analyze(sourceContext);
+  return {
+    recommendations: mergeRecommendations([changesets, commits]),
+    unversionedChanges: analyzeUnversionedCommits(ctx)
+  };
+}
+function analyzeUnversionedCommits(ctx) {
+  const packagePaths = ctx.config.packages.map((pkg) => pkg.path);
+  const typeMap = {
+    ...DEFAULT_TYPE_BUMP_MAP,
+    ...ctx.config.release?.commits?.types ?? {}
+  };
+  const changes = /* @__PURE__ */ new Map();
+  for (const packagePath of packagePaths) {
+    const packageName = path22.basename(packagePath);
+    const ref = findLastReleaseRef(ctx.cwd, packageName);
+    const rawCommits = getCommitsSinceRef(ctx.cwd, ref);
+    for (const raw of rawCommits) {
+      const parsed = parseConventionalCommit(raw.hash, raw.message, raw.files);
+      if (!parsed) {
+        if (commitTouchesPackage(raw, packagePath)) {
+          remember(changes, {
+            hash: raw.hash,
+            summary: firstLine(raw.message),
+            files: raw.files,
+            reason: "non-conventional",
+            packagePath
+          });
+        } else if (isUnmatchedPackageChange(raw, packagePaths)) {
+          remember(changes, {
+            hash: raw.hash,
+            summary: firstLine(raw.message),
+            files: raw.files,
+            reason: "unmatched-package"
+          });
+        }
+        continue;
+      }
+      const bumpType = resolveCommitBumpType(parsed, typeMap);
+      const resolvedPackages = resolveCommitPackages(parsed, packagePaths);
+      if (bumpType && resolvedPackages.length === 0) {
+        remember(changes, {
+          hash: raw.hash,
+          summary: conventionalSummary(parsed),
+          files: raw.files,
+          reason: "unmatched-package",
+          type: parsed.type
+        });
+        continue;
+      }
+      if (bumpType) continue;
+      if (resolvedPackages.includes(packagePath)) {
+        remember(changes, {
+          hash: raw.hash,
+          summary: conventionalSummary(parsed),
+          files: raw.files,
+          reason: "ignored-type",
+          packagePath,
+          type: parsed.type
+        });
+      } else if (isUnmatchedPackageChange(raw, packagePaths)) {
+        remember(changes, {
+          hash: raw.hash,
+          summary: conventionalSummary(parsed),
+          files: raw.files,
+          reason: "unmatched-package",
+          type: parsed.type
+        });
+      }
+    }
+  }
+  return [...changes.values()];
+}
+function commitTouchesPackage(commit, packagePath) {
+  if (commit.files.length === 0 || packagePath === ".") return true;
+  const normalizedPackage = packagePath.replace(/\\/g, "/");
+  return commit.files.some((file) => {
+    const normalized = file.replace(/\\/g, "/");
+    return normalized === normalizedPackage || normalized.startsWith(`${normalizedPackage}/`);
+  });
+}
+function isUnmatchedPackageChange(commit, packagePaths) {
+  if (commit.files.length === 0) return false;
+  return !packagePaths.some(
+    (packagePath) => commitTouchesPackage(commit, packagePath)
+  );
+}
+function remember(changes, change) {
+  const key = [
+    change.hash,
+    change.reason,
+    change.packagePath ?? "workspace"
+  ].join(":");
+  changes.set(key, change);
+}
+function firstLine(message) {
+  const newline = message.indexOf("\n");
+  return newline === -1 ? message : message.slice(0, newline);
+}
+function conventionalSummary(commit) {
+  return commit.scope ? `${commit.type}(${commit.scope}): ${commit.description}` : `${commit.type}: ${commit.description}`;
+}
 
 // ../pubm-issue-34-release-workflow/packages/core/src/tasks/required-missing-information.ts
-var { prerelease: prerelease3 } = import_semver11.default;
-
-// ../pubm-issue-34-release-workflow/packages/core/src/tasks/snapshot-runner.ts
-init_error4();
-init_git();
+var import_semver12 = __toESM(require_semver2(), 1);
 init_i18n();
 init_catalog();
-init_exec();
+
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
+var import_semver10 = __toESM(require_semver2(), 1);
+init_i18n();
+
+// ../pubm-issue-34-release-workflow/packages/core/src/utils/filter-config.ts
 init_package_key();
-init_package_manager();
-init_ui();
 
-// ../pubm-issue-34-release-workflow/packages/core/src/index.ts
-init_exec();
-
-// ../pubm-issue-34-release-workflow/node_modules/.bun/update-kit@0.1.12/node_modules/update-kit/dist/index.mjs
-import { execFile as execFile2 } from "child_process";
-import { promisify } from "util";
-var import_semver12 = __toESM(require_semver2(), 1);
-var import_semver13 = __toESM(require_semver2(), 1);
-var import_semver14 = __toESM(require_semver2(), 1);
-import { execFile as execFile22 } from "child_process";
-import { promisify as promisify2 } from "util";
-import { execFile as execFile3 } from "child_process";
-import { promisify as promisify3 } from "util";
-var MAX_COMMAND_OUTPUT_BYTES = 10 * 1024 * 1024;
-var execFileAsync = promisify(execFile2);
-var execFileAsync2 = promisify2(execFile22);
-var execFileAsync3 = promisify3(execFile3);
-
-// ../pubm-issue-34-release-workflow/packages/core/src/utils/notify-new-version.ts
-init_pubm_metadata();
-
-// ../pubm-issue-34-release-workflow/packages/core/src/index.ts
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
 init_package_key();
-init_package_manager();
-init_pubm_metadata();
-init_rollback();
 init_ui();
-
-// ../pubm-issue-34-release-workflow/packages/core/src/validate/extraneous-files.ts
-var import_micromatch6 = __toESM(require_micromatch(), 1);
 
 // ../pubm-issue-34-release-workflow/packages/core/src/version-source/plan.ts
-var import_micromatch7 = __toESM(require_micromatch(), 1);
-var import_semver15 = __toESM(require_semver2(), 1);
+var import_micromatch6 = __toESM(require_micromatch(), 1);
+var import_semver6 = __toESM(require_semver2(), 1);
 init_package_key();
 function createVersionPlanFromRecommendations(config, recommendations) {
   const groupedRecommendations = applyConfiguredGroups(config, recommendations);
@@ -51832,7 +51935,7 @@ function createVersionPlanFromRecommendations(config, recommendations) {
       (pkg) => rec.packageKey ? packageKey(pkg) === rec.packageKey : pkg.path === rec.packagePath
     );
     for (const pkg of matchingPackages) {
-      const newVersion = import_semver15.default.inc(pkg.version, rec.bumpType);
+      const newVersion = import_semver6.default.inc(pkg.version, rec.bumpType);
       if (newVersion) packages.set(packageKey(pkg), newVersion);
     }
   }
@@ -51845,7 +51948,7 @@ function createVersionPlanFromRecommendations(config, recommendations) {
       version
     };
   }
-  if (config.versioning === "fixed") {
+  if (releaseVersioning(config).mode === "fixed") {
     const version = highestVersion([...packages.values()]);
     return {
       mode: "fixed",
@@ -51858,29 +51961,9 @@ function createVersionPlanFromRecommendations(config, recommendations) {
   return { mode: "independent", packages };
 }
 async function analyzeVersionSources(ctx) {
-  const currentVersions = new Map(
-    ctx.config.packages.map((pkg) => [pkg.path, pkg.version])
-  );
-  const versionSources = ctx.config.versionSources ?? "all";
-  const sources = [];
-  if (versionSources === "all" || versionSources === "changesets") {
-    sources.push(new ChangesetSource());
-  }
-  if (versionSources === "all" || versionSources === "commits") {
-    sources.push(
-      new ConventionalCommitSource(ctx.config.conventionalCommits?.types)
-    );
-  }
-  const sourceContext = {
-    cwd: ctx.cwd,
-    packages: currentVersions,
-    resolveKey: createKeyResolver(ctx.config.packages)
-  };
-  const sourceResults = [];
-  for (const source of sources) {
-    sourceResults.push(await source.analyze(sourceContext));
-  }
-  return mergeRecommendations(sourceResults);
+  const analysis = await analyzeReleaseChanges(ctx);
+  ctx.runtime.releaseAnalysis = analysis;
+  return analysis.recommendations;
 }
 async function applyVersionSourcePlan(ctx) {
   const recommendations = await analyzeVersionSources(ctx);
@@ -51897,16 +51980,17 @@ async function applyVersionSourcePlan(ctx) {
 function highestVersion(versions) {
   let highest = versions[0] ?? "";
   for (const version of versions.slice(1)) {
-    if (import_semver15.default.valid(version) && import_semver15.default.valid(highest)) {
-      if (import_semver15.default.gt(version, highest)) highest = version;
+    if (import_semver6.default.valid(version) && import_semver6.default.valid(highest)) {
+      if (import_semver6.default.gt(version, highest)) highest = version;
     }
   }
   return highest;
 }
 function applyConfiguredGroups(config, recommendations) {
-  const fixedGroups = config.fixed ?? [];
-  const linkedGroups = config.linked ?? [];
-  if (config.versioning === "fixed" || recommendations.length === 0 || fixedGroups.length === 0 && linkedGroups.length === 0) {
+  const versioning = releaseVersioning(config);
+  const fixedGroups = versioning.fixed ?? [];
+  const linkedGroups = versioning.linked ?? [];
+  if (versioning.mode === "fixed" || recommendations.length === 0 || fixedGroups.length === 0 && linkedGroups.length === 0) {
     return [...recommendations];
   }
   const packagesByKey = new Map(
@@ -51945,19 +52029,99 @@ function applyConfiguredGroups(config, recommendations) {
     };
   });
 }
+function releaseVersioning(config) {
+  return config.release?.versioning ?? {
+    mode: config.versioning ?? "independent",
+    fixed: config.fixed ?? [],
+    linked: config.linked ?? [],
+    updateInternalDependencies: config.updateInternalDependencies ?? "patch"
+  };
+}
 function resolveGroupKeys(config, group) {
   const keys = /* @__PURE__ */ new Set();
   for (const ref of group) {
     for (const pkg of config.packages) {
       const key = packageKey(pkg);
       const aliases = [key, pkg.path, pkg.name].filter(Boolean);
-      if (aliases.some((alias) => alias === ref || import_micromatch7.default.isMatch(alias, ref))) {
+      if (aliases.some((alias) => alias === ref || import_micromatch6.default.isMatch(alias, ref))) {
         keys.add(key);
       }
     }
   }
   return [...keys];
 }
+
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/display.ts
+init_dist();
+var import_semver7 = __toESM(require_semver2(), 1);
+init_i18n();
+init_package_key();
+init_ui();
+var { SemVer: SemVer3 } = import_semver7.default;
+
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/fixed-mode.ts
+init_dist();
+var import_semver9 = __toESM(require_semver2(), 1);
+init_i18n();
+init_package_key();
+
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/version-choices.ts
+init_dist();
+var import_semver8 = __toESM(require_semver2(), 1);
+init_i18n();
+var { RELEASE_TYPES, SemVer: SemVer4 } = import_semver8.default;
+
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/independent-mode.ts
+var { SemVer: SemVer5 } = import_semver10.default;
+
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/prompts/single-package.ts
+var import_semver11 = __toESM(require_semver2(), 1);
+init_i18n();
+init_package_key();
+
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/required-missing-information.ts
+var { prerelease: prerelease3 } = import_semver12.default;
+
+// ../pubm-issue-34-release-workflow/packages/core/src/tasks/snapshot-runner.ts
+init_error4();
+init_git();
+init_i18n();
+init_catalog();
+init_exec();
+init_package_key();
+init_package_manager();
+init_ui();
+
+// ../pubm-issue-34-release-workflow/packages/core/src/index.ts
+init_exec();
+
+// ../pubm-issue-34-release-workflow/node_modules/.bun/update-kit@0.1.12/node_modules/update-kit/dist/index.mjs
+import { execFile as execFile2 } from "child_process";
+import { promisify } from "util";
+var import_semver13 = __toESM(require_semver2(), 1);
+var import_semver14 = __toESM(require_semver2(), 1);
+var import_semver15 = __toESM(require_semver2(), 1);
+import { execFile as execFile22 } from "child_process";
+import { promisify as promisify2 } from "util";
+import { execFile as execFile3 } from "child_process";
+import { promisify as promisify3 } from "util";
+var MAX_COMMAND_OUTPUT_BYTES = 10 * 1024 * 1024;
+var execFileAsync = promisify(execFile2);
+var execFileAsync2 = promisify2(execFile22);
+var execFileAsync3 = promisify3(execFile3);
+
+// ../pubm-issue-34-release-workflow/packages/core/src/utils/notify-new-version.ts
+init_pubm_metadata();
+
+// ../pubm-issue-34-release-workflow/packages/core/src/index.ts
+init_package_key();
+init_package_manager();
+init_pubm_metadata();
+init_rollback();
+init_ui();
+
+// ../pubm-issue-34-release-workflow/packages/core/src/validate/extraneous-files.ts
+var import_micromatch7 = __toESM(require_micromatch(), 1);
 
 // ../pubm-issue-34-release-workflow/packages/core/src/workflow/release-pr.ts
 init_catalog2();
@@ -52275,14 +52439,14 @@ function packageKeysForPlan(ctx, plan) {
   return [...plan.packages.keys()];
 }
 function releasePrGrouping(ctx) {
-  return releasePrConfigFor(ctx).grouping ?? ctx.config.versioning;
+  return releasePrConfigFor(ctx).grouping;
 }
 function releasePrConfigFor(ctx) {
-  const releasePr = ctx.config.releasePr;
+  const releasePr = ctx.config.release.pullRequest;
   return {
-    grouping: releasePr?.grouping,
-    fixed: releasePr?.fixed ?? ctx.config.fixed,
-    linked: releasePr?.linked ?? ctx.config.linked
+    grouping: releasePr.grouping,
+    fixed: releasePr.fixed,
+    linked: releasePr.linked
   };
 }
 function resolveConfiguredGroup(ctx, group) {
@@ -52360,13 +52524,13 @@ async function prepareReleasePr(ctx, input) {
         ctx,
         scope: input.scope,
         version: versionSummary,
-        template: ctx.config.releasePr.branchTemplate
+        template: ctx.config.release.pullRequest.branchTemplate
       }),
       title: renderReleasePrTitle({
         ctx,
         scope: input.scope,
         version: versionSummary,
-        template: ctx.config.releasePr.titleTemplate
+        template: ctx.config.release.pullRequest.titleTemplate
       }),
       body: renderReleasePrBody(input.scope, scopedPlan, input.override),
       changedFiles,
@@ -52487,7 +52651,7 @@ async function loadPubmContext({
   workingDirectory,
   baseBranch
 }) {
-  const cwd = path22.resolve(process.cwd(), workingDirectory || ".");
+  const cwd = path23.resolve(process.cwd(), workingDirectory || ".");
   const loaded = await loadConfig(cwd) ?? {};
   const config = await resolveConfig(loaded, cwd);
   const options = resolveOptions({
@@ -52516,6 +52680,7 @@ function planReleasePrScopes(ctx) {
   return buildReleasePrScopes(ctx, plan).map((scope) => {
     const scopedPlan = scopeVersionPlan(plan, scope);
     const version = releasePrVersion(scopedPlan);
+    const pullRequest = ctx.config.release.pullRequest;
     return {
       scope,
       version,
@@ -52523,13 +52688,13 @@ function planReleasePrScopes(ctx) {
         ctx,
         scope,
         version,
-        template: ctx.config.releasePr.branchTemplate
+        template: pullRequest.branchTemplate
       }),
       title: renderReleasePrTitle({
         ctx,
         scope,
         version,
-        template: ctx.config.releasePr.titleTemplate
+        template: pullRequest.titleTemplate
       })
     };
   });
@@ -52701,12 +52866,17 @@ async function run2() {
     workingDirectory,
     baseBranch
   });
+  const pullRequest = ctx.config.release.pullRequest;
   if (!ctx.runtime.versionPlan) {
-    setOutput("status", "no_pending_release");
-    info("No pending release changes found.");
+    const handled = handleNoVersionPlan(ctx);
+    setOutput("status", handled.status);
+    if (handled.error) {
+      setOutput("errors", handled.error);
+      throw new Error(handled.error);
+    }
     return;
   }
-  if (issueCommentTarget && !issueCommentTarget.labels.includes(ctx.config.releasePr.label)) {
+  if (issueCommentTarget && !issueCommentTarget.labels.includes(pullRequest.label)) {
     setOutput("status", "ignored");
     info(
       "Ignoring pubm slash command on a pull request without the release label."
@@ -52723,7 +52893,7 @@ async function run2() {
   const overrideResult = issueCommentTarget ? resolveReleasePrActionOverride({
     labels: issueCommentTarget.labels,
     comments: issueCommentTarget.comments,
-    bumpLabels: ctx.config.releasePr.bumpLabels
+    bumpLabels: pullRequest.bumpLabels
   }) : { errors: [] };
   if (overrideResult.errors.length > 0) {
     const message = formatOverrideErrors(overrideResult.errors);
@@ -52748,7 +52918,7 @@ async function run2() {
   const prNumbers = [];
   const openReleasePrs = issueCommentTarget ? [] : await listOpenReleasePullRequests(octokit, repo, {
     base: baseBranch,
-    label: ctx.config.releasePr.label
+    label: pullRequest.label
   });
   const repoFullName = `${repo.owner}/${repo.repo}`;
   for (const item of planned) {
@@ -52766,7 +52936,7 @@ async function run2() {
       base: baseBranch,
       title: prepared.title,
       body: prepared.body,
-      label: ctx.config.releasePr.label
+      label: pullRequest.label
     });
     prNumbers.push(prNumber);
     try {
@@ -52801,6 +52971,37 @@ async function run2() {
   }
   setOutput("status", "success");
   setOutput("pull-requests", prNumbers.join(","));
+}
+function handleNoVersionPlan(ctx) {
+  const changes = ctx.runtime.releaseAnalysis?.unversionedChanges ?? [];
+  if (changes.length === 0) {
+    info("No pending release changes found.");
+    return { status: "no_pending_release" };
+  }
+  const message = unversionedChangesMessage(changes);
+  const policy = ctx.config.release.pullRequest.unversionedChanges;
+  if (policy === "fail") {
+    return { status: "unversioned_changes", error: message };
+  }
+  if (policy === "warn") {
+    warning(message);
+    return { status: "unversioned_changes" };
+  }
+  info("No versioned release changes found.");
+  return { status: "no_pending_release" };
+}
+function unversionedChangesMessage(changes) {
+  const preview = changes.slice(0, 10).map((change) => {
+    const location = change.packagePath ? ` ${change.packagePath}` : "";
+    return `- ${change.hash}${location}: ${change.summary} (${change.reason})`;
+  }).join("\n");
+  const suffix = changes.length > 10 ? `
+...and ${changes.length - 10} more.` : "";
+  return [
+    "No release PR was opened because pending changes did not produce a version bump.",
+    preview,
+    suffix
+  ].filter(Boolean).join("\n");
 }
 run2().catch((err) => {
   setFailed(err instanceof Error ? err.message : String(err));

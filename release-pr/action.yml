@@ -22,7 +22,7 @@ inputs:
 
 outputs:
   status:
-    description: 'Result: "success", "no_pending_release", "ignored", "invalid_override", "scope_not_found", or "dry_run_failed"'
+    description: 'Result: "success", "no_pending_release", "unversioned_changes", "ignored", "invalid_override", "scope_not_found", or "dry_run_failed"'
   pull-requests:
     description: "Comma-separated release PR numbers created or updated"
   errors:
